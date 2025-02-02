@@ -93,11 +93,9 @@ NEXT_PUBLIC_HERE_API_KEY=tu_api_key_aquí
 
 ```bash
 npm run dev
-```
-
 # o
-
 yarn dev
+```
 
 ### 5. Accede a la aplicación:
 
