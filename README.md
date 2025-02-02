@@ -71,8 +71,8 @@ Para configurar y ejecutar el proyecto localmente, sigue estos pasos:
 ### 1. Clona el repositorio:
 
 ```bash
-git clone https://github.com/tu-usuario/sustainability-travel-planner.git
-cd sustainability-travel-planner
+git clone https://github.com/ClaraDevelope/ecojourney.git
+cd ecojourney
 ```
 
 ### 2. Instala las dependencias:
