@@ -28,6 +28,7 @@ Este proyecto combina tecnología moderna con principios de sostenibilidad, busc
 
 El proyecto sigue la arquitectura por componentes de Next.js, organizado en carpetas lógicas:
 
+```bash
 /ecojourney
 ├── public/ # Archivos estáticos
 ├── src/
@@ -49,6 +50,7 @@ El proyecto sigue la arquitectura por componentes de Next.js, organizado en carp
 │ └── services/ # Servicios y APIs
 │ └── ... # Lógica de integración con APIs (por añadir)
 └── README.md # Documentación del proyecto
+```
 
 ---
 
@@ -111,10 +113,10 @@ HERE Maps : Para geolocalización y autocompletado.
 🎓 Recursos de Aprendizaje
 Si deseas profundizar en las tecnologías utilizadas en este proyecto, aquí tienes algunos recursos útiles:
 
-Next.js Documentation [https://nextjs.org/docs?spm=5aebb161.5ebf13d8.0.0.532140903ZU3PC]
-Tailwind CSS Documentation [https://tailwindcss.com/docs/installation/using-vite?spm=5aebb161.5ebf13d8.0.0.532140903ZU3PC]
-HERE Maps Developer Guide [https://www.here.com/docs/?spm=5aebb161.5ebf13d8.0.0.532140903ZU3PC]
-Chart.js Documentation [https://www.chartjs.org/docs/latest/]
+- Next.js Documentation [https://nextjs.org/docs?spm=5aebb161.5ebf13d8.0.0.532140903ZU3PC]
+- Tailwind CSS Documentation [https://tailwindcss.com/docs/installation/using-vite?spm=5aebb161.5ebf13d8.0.0.532140903ZU3PC]
+- HERE Maps Developer Guide [https://www.here.com/docs/?spm=5aebb161.5ebf13d8.0.0.532140903ZU3PC]
+- Chart.js Documentation [https://www.chartjs.org/docs/latest/]
 
 🌐 Despliegue
 La manera más sencilla de desplegar tu aplicación Next.js es utilizando la plataforma Vercel . Vercel es el creador de Next.js y ofrece integración nativa para proyectos de este framework.
@@ -137,7 +139,3 @@ Nombre: Clara Manzano Corona
 Email: clara.manzano.corona@gmail.com
 LinkedIn: [(https://www.linkedin.com/in/clara-manzano-corona/)]
 Portfolio: [https://portfolioclaramanzano.vercel.app/]
-
-```
-
-```
