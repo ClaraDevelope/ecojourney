@@ -73,9 +73,11 @@ export async function fetchRoute(
 ) {
   try {
     const params = new URLSearchParams({
-      waypoint0: `geo!${startLat},${startLon}`,
-      waypoint1: `geo!${endLat},${endLon}`,
-      mode: mode, // Usar el modo de transporte proporcionado
+      // waypoint0: `geo!${startLat},${startLon}`,
+      // waypoint1: `geo!${endLat},${endLon}`,
+      origin: `${startLat},${startLon}`,
+      destination: `${endLat},${endLon}`,
+      mode: mode,
       apiKey: HERE_API_CONFIG.API_KEY
     })
 
