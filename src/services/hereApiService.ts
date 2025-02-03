@@ -63,26 +63,34 @@ export async function fetchGeocode(query: string) {
     return null
   }
 }
+
 export async function fetchRoute(
-  startLat: number,
-  startLon: number,
-  endLat: number,
-  endLon: number,
-  mode: string = 'bicycle' // Cambiar a un modo válido como 'bicycle', 'car', 'publicTransport', etc.
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+  transportMode: string = 'bicycle',
+  origin: string
 ) {
   try {
     const params = new URLSearchParams({
-      origin: `${startLat},${startLon}`,
-      destination: `${endLat},${endLon}`,
-      // Agregar parámetros para los modos de transporte que necesitamos
-      // Si no quieres añadir más opciones de transporte, usa el parámetro básico 'mode'
-      'vehicle[modes]': mode,
-      alternatives: '3', // Definir cuántas rutas alternativas quieres recibir
-      apiKey: HERE_API_CONFIG.API_KEY // La API Key sigue igual
+      apiKey: HERE_API_CONFIG.API_KEY,
+      departure: `${lat1},${lon1}`,
+      destination: `${lat2},${lon2}`,
+      transportMode: transportMode,
+      origin: origin
+    })
+    params.forEach((value, key) => {
+      console.log(`${key}: ${value}`)
     })
 
+    // console.log('Parámetros URL:')
+    // Object.entries(Object.fromEntries(params)).forEach(([key, value]) => {
+    //   console.log(`${key}: ${value}`)
+    // })
+
     const response = await fetch(
-      `https://intermodal.router.hereapi.com/v8/routes?${params}`
+      `https://router.hereapi.com/v8/routes?${params.toString()}`
     )
 
     if (!response.ok) {
@@ -93,11 +101,15 @@ export async function fetchRoute(
 
     const data = await response.json()
     console.log(data)
-    return data?.routes[0]
-    // return data.routes[0]?.sections[0]?.polyline
+
+    if (data.routes && data.routes[0] && data.routes[0].sections[0]) {
+      return data.routes[0].sections[0].polyline
+    }
+
+    throw new Error('No se encontró una ruta.')
   } catch (error) {
-    console.error(error)
-    return null
+    console.error('Error en fetchRoute:', error)
+    throw new Error('Hubo un error al obtener la ruta')
   }
 }
 
@@ -106,18 +118,21 @@ export async function fetchRoute(
 //   startLon: number,
 //   endLat: number,
 //   endLon: number,
-//   mode: string = 'fastest;car;traffic:enabled'
+//   mode: string = 'bicycle' // Cambiar a un modo válido como 'bicycle', 'car', 'publicTransport', etc.
 // ) {
 //   try {
 //     const params = new URLSearchParams({
-//       waypoint0: `geo!${startLat},${startLon}`,
-//       waypoint1: `geo!${endLat},${endLon}`,
-//       mode: mode, // Usar el modo de transporte proporcionado
-//       apiKey: HERE_API_CONFIG.API_KEY
+//       origin: `${startLat},${startLon}`,
+//       destination: `${endLat},${endLon}`,
+//       // Agregar parámetros para los modos de transporte que necesitamos
+//       // Si no quieres añadir más opciones de transporte, usa el parámetro básico 'mode'
+//       'vehicle[modes]': mode,
+//       alternatives: '3', // Definir cuántas rutas alternativas quieres recibir
+//       apiKey: HERE_API_CONFIG.API_KEY // La API Key sigue igual
 //     })
 
 //     const response = await fetch(
-//       `https://router.hereapi.com/v8/routes?${params}`
+//       `https://intermodal.router.hereapi.com/v8/routes?${params}`
 //     )
 
 //     if (!response.ok) {
@@ -127,9 +142,11 @@ export async function fetchRoute(
 //     }
 
 //     const data = await response.json()
-//     return data.routes
+//     console.log(data)
+//     return data?.routes[0]
+//     // return data.routes[0]?.sections[0]?.polyline
 //   } catch (error) {
 //     console.error(error)
-//     return []
+//     return null
 //   }
 // }

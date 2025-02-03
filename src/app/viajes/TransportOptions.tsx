@@ -8,19 +8,15 @@ interface Coordinates {
 
 interface TransportOption {
   mode: string
-  co2Factor: number // Factor de CO2 por km (g/km)
+  name: string
+  co2Factor: number
 }
 
 const transportOptions: TransportOption[] = [
-  { mode: 'Coche', co2Factor: 120 },
-  { mode: 'Bicicleta', co2Factor: 0 },
-  { mode: 'Transporte público', co2Factor: 20 }
+  { mode: 'car', name: 'Coche', co2Factor: 120 },
+  { mode: 'bicycle', name: 'Bicicleta', co2Factor: 0 },
+  { mode: 'publicTransport', name: 'Tren', co2Factor: 20 }
 ]
-
-const transportModeMapping: { [key: string]: string } = {
-  Coche: 'car',
-  Bicicleta: 'bicycle'
-}
 
 const calculateDistance = (origin: Coordinates, destination: Coordinates) => {
   const R = 6371 // Radio de la Tierra en kilómetros
@@ -41,9 +37,20 @@ const calculateDistance = (origin: Coordinates, destination: Coordinates) => {
 const TransportOptions: React.FC<{
   origin: Coordinates | null
   destination: Coordinates | null
-  setRouteData: React.Dispatch<React.SetStateAction<string | null>> // Estado para la ruta
-}> = ({ origin, destination, setRouteData }) => {
-  const [selectedTransport, setSelectedTransport] = useState<string>('') // Estado inicial como cadena vacía
+  setRouteData: React.Dispatch<React.SetStateAction<string | null>>
+  transportMode: string
+  setTransportMode: React.Dispatch<React.SetStateAction<string>>
+}> = ({
+  origin,
+  destination,
+  setRouteData,
+  transportMode,
+  setTransportMode
+}) => {
+  const [selectedTransport, setSelectedTransport] = useState<string>(
+    transportMode || ''
+  )
+
   const [distance, setDistance] = useState<number | null>(null)
   const [co2Emissions, setCo2Emissions] = useState<number | null>(null)
 
@@ -59,19 +66,22 @@ const TransportOptions: React.FC<{
         if (transport) {
           setCo2Emissions(dist * transport.co2Factor)
 
-          // Mapeamos el modo de transporte a la API de HERE
-          const transportMode = transportModeMapping[selectedTransport] || 'car' // Valor por defecto 'car'
+          const originString = `${origin.lat},${origin.lng}`
 
-          // Llamar a fetchRoute con el modo de transporte mapeado
           const fetchRouteData = async () => {
-            const route = await fetchRoute(
-              origin.lat,
-              origin.lng,
-              destination.lat,
-              destination.lng,
-              transportMode
-            )
-            setRouteData(route) // Guardar la ruta en el estado
+            try {
+              const route = await fetchRoute(
+                origin.lat,
+                origin.lng,
+                destination.lat,
+                destination.lng,
+                selectedTransport,
+                originString
+              )
+              setRouteData(route)
+            } catch (error) {
+              console.error('Error al obtener la ruta:', error)
+            }
           }
 
           fetchRouteData()
@@ -94,13 +104,17 @@ const TransportOptions: React.FC<{
             <h4 className='text-white'>Seleccione un modo de transporte:</h4>
             <select
               value={selectedTransport}
-              onChange={(e) => setSelectedTransport(e.target.value)}
+              onChange={(e) => {
+                const selectedValue = e.target.value
+                setSelectedTransport(selectedValue)
+                setTransportMode(selectedValue)
+              }}
               className='mt-2 p-2 text-black'
             >
               <option value=''>Seleccionar...</option>
               {transportOptions.map((option) => (
                 <option key={option.mode} value={option.mode}>
-                  {option.mode}
+                  {option.name}
                 </option>
               ))}
             </select>
@@ -124,6 +138,7 @@ const TransportOptions: React.FC<{
 export default TransportOptions
 
 // import React, { useEffect, useState } from 'react'
+// import { fetchRoute } from '@/services/hereApiService'
 
 // interface Coordinates {
 //   lat: number
@@ -136,10 +151,15 @@ export default TransportOptions
 // }
 
 // const transportOptions: TransportOption[] = [
-//   { mode: 'Coche', co2Factor: 120 }, // 120g/km para coche
-//   { mode: 'Bicicleta', co2Factor: 0 }, // 0g/km para bicicleta
-//   { mode: 'Transporte público', co2Factor: 20 } // 20g/km para transporte público
+//   { mode: 'Coche', co2Factor: 120 },
+//   { mode: 'Bicicleta', co2Factor: 0 },
+//   { mode: 'Transporte público', co2Factor: 20 }
 // ]
+
+// const transportModeMapping: { [key: string]: string } = {
+//   Coche: 'car',
+//   Bicicleta: 'bicycle'
+// }
 
 // const calculateDistance = (origin: Coordinates, destination: Coordinates) => {
 //   const R = 6371 // Radio de la Tierra en kilómetros
@@ -160,30 +180,44 @@ export default TransportOptions
 // const TransportOptions: React.FC<{
 //   origin: Coordinates | null
 //   destination: Coordinates | null
-// }> = ({ origin, destination }) => {
-//   const [selectedTransport, setSelectedTransport] = useState<string | null>(
-//     null
-//   )
+//   setRouteData: React.Dispatch<React.SetStateAction<string | null>> // Estado para la ruta
+// }> = ({ origin, destination, setRouteData }) => {
+//   const [selectedTransport, setSelectedTransport] = useState<string>('') // Estado inicial como cadena vacía
 //   const [distance, setDistance] = useState<number | null>(null)
 //   const [co2Emissions, setCo2Emissions] = useState<number | null>(null)
 
 //   useEffect(() => {
 //     if (origin && destination) {
-//       // Calcular la distancia
 //       const dist = calculateDistance(origin, destination)
 //       setDistance(dist)
 
-//       // Calcular las emisiones de CO2 para el modo de transporte seleccionado
 //       if (selectedTransport && dist) {
 //         const transport = transportOptions.find(
 //           (option) => option.mode === selectedTransport
 //         )
 //         if (transport) {
 //           setCo2Emissions(dist * transport.co2Factor)
+
+//           // Mapeamos el modo de transporte a la API de HERE
+//           const transportMode = transportModeMapping[selectedTransport] || 'car' // Valor por defecto 'car'
+
+//           // Llamar a fetchRoute con el modo de transporte mapeado
+//           const fetchRouteData = async () => {
+//             const route = await fetchRoute(
+//               origin.lat,
+//               origin.lng,
+//               destination.lat,
+//               destination.lng,
+//               transportMode
+//             )
+//             setRouteData(route) // Guardar la ruta en el estado
+//           }
+
+//           fetchRouteData()
 //         }
 //       }
 //     }
-//   }, [origin, destination, selectedTransport])
+//   }, [origin, destination, selectedTransport, setRouteData])
 
 //   return (
 //     <div className={origin && destination ? 'bg-gray-800 p-4 mx-auto' : ''}>
@@ -198,6 +232,7 @@ export default TransportOptions
 //           <div className='my-4'>
 //             <h4 className='text-white'>Seleccione un modo de transporte:</h4>
 //             <select
+//               value={selectedTransport}
 //               onChange={(e) => setSelectedTransport(e.target.value)}
 //               className='mt-2 p-2 text-black'
 //             >

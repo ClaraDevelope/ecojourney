@@ -8,31 +8,32 @@ import {
 import RouteMap from './RouteMap'
 import TransportOptions from './TransportOptions'
 
+interface Coordinates {
+  lat: number
+  lng: number
+}
+
 interface Suggestion {
   id: string
   title: string
 }
 
-interface Coordinates {
-  lat: number
-  lng: number
-}
-// !A ver, problema. Para hacer la llamada fetch podemos dejarlo como está y que en hereApiService.ts siempre llame con el modo bicicleta,
-//!  o que de alguna forma llamemos desde transportOptions.tsx cuando el usuario elija el modo de transporte pero habría que tener cuidado porque el RouteMap.tsx necesita del setRouteData y eso para poder pintar la ruta en el mapa... UN POCO LÍO. Por cierto, ya no se pinta la línea recta, habría que arreglarlo también😅
 export default function FormRoute() {
-  const [origen, setOrigen] = useState<string>('')
-  const [destino, setDestino] = useState<string>('')
-  const [origenCoords, setOrigenCoords] = useState<Coordinates | null>(null)
-  const [destinoCoords, setDestinoCoords] = useState<Coordinates | null>(null)
-  const [origenSuggestions, setOrigenSuggestions] = useState<Suggestion[]>([])
-  const [destinoSuggestions, setDestinoSuggestions] = useState<Suggestion[]>([])
-  const [routeData, setRouteData] = useState<string | null>(null)
+  const [origen, setOrigen] = useState<string>('') // Origen como string
+  const [destino, setDestino] = useState<string>('') // Destino como string
+  const [origenCoords, setOrigenCoords] = useState<Coordinates | null>(null) // Coordenadas de origen
+  const [destinoCoords, setDestinoCoords] = useState<Coordinates | null>(null) // Coordenadas de destino
+  const [origenSuggestions, setOrigenSuggestions] = useState<Suggestion[]>([]) // Sugerencias de origen
+  const [destinoSuggestions, setDestinoSuggestions] = useState<Suggestion[]>([]) // Sugerencias de destino
+  const [routeData, setRouteData] = useState<string | null>(null) // Datos de la ruta
+  const [transportMode, setTransportMode] = useState<string>('bicycle') // Modo de transporte por defecto
 
   const origenRef = useRef<HTMLDivElement>(null)
   const destinoRef = useRef<HTMLDivElement>(null)
 
   const coordinates = { lat: 52.5228, lon: 13.4124 }
 
+  // Función para manejar cambios en los inputs de origen y destino
   const handleInputChange = async (
     value: string,
     setValue: React.Dispatch<React.SetStateAction<string>>,
@@ -49,13 +50,14 @@ export default function FormRoute() {
         setSuggestions(suggestions)
       } catch (error) {
         console.error('Error fetching suggestions:', error)
-        setSuggestions([])
+        setSuggestions([]) // Limpiar sugerencias si hay error
       }
     } else {
-      setSuggestions([])
+      setSuggestions([]) // Limpiar sugerencias si el input es corto
     }
   }
 
+  // Función para manejar cuando se hace clic en una sugerencia
   const handleSuggestionClick = async (
     suggestion: Suggestion,
     setValue: React.Dispatch<React.SetStateAction<string>>,
@@ -63,7 +65,7 @@ export default function FormRoute() {
     setSuggestions: React.Dispatch<React.SetStateAction<Suggestion[]>>
   ) => {
     setValue(suggestion.title)
-    setSuggestions([])
+    setSuggestions([]) // Limpiar las sugerencias al hacer clic
     try {
       const coords = await fetchGeocode(suggestion.title)
       if (coords) {
@@ -76,36 +78,21 @@ export default function FormRoute() {
     }
   }
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        origenRef.current &&
-        !origenRef.current.contains(event.target as Node) &&
-        destinoRef.current &&
-        !destinoRef.current.contains(event.target as Node)
-      ) {
-        setOrigenSuggestions([])
-        setDestinoSuggestions([])
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
+  // useEffect para manejar la carga de datos de la ruta
   useEffect(() => {
     const fetchRouteData = async () => {
       if (origenCoords && destinoCoords) {
         try {
+          const origin = `${origenCoords.lat},${origenCoords.lng}` // Crear el string con latitud y longitud
           const data = await fetchRoute(
-            origenCoords.lat,
-            origenCoords.lng,
-            destinoCoords.lat,
-            destinoCoords.lng
+            origenCoords.lat, // latitud de origen
+            origenCoords.lng, // longitud de origen
+            destinoCoords.lat, // latitud de destino
+            destinoCoords.lng, // longitud de destino
+            transportMode, // modo de transporte
+            origin // el parámetro origin con el string de latitud y longitud de origen
           )
-          console.log(data)
-
           setRouteData(data)
-          console.log(routeData)
         } catch (error) {
           console.error('Error al obtener los datos de la ruta:', error)
         }
@@ -113,7 +100,7 @@ export default function FormRoute() {
     }
 
     fetchRouteData()
-  }, [origenCoords, destinoCoords])
+  }, [origenCoords, destinoCoords, transportMode])
 
   return (
     <div className='flex flex-col gap-6 mt-8'>
@@ -205,6 +192,8 @@ export default function FormRoute() {
         origin={origenCoords}
         destination={destinoCoords}
         setRouteData={setRouteData}
+        transportMode={transportMode}
+        setTransportMode={setTransportMode}
       />
 
       <RouteMap
@@ -218,7 +207,11 @@ export default function FormRoute() {
 
 // 'use client'
 // import { useState, useEffect, useRef } from 'react'
-// import { fetchSuggestions, fetchGeocode } from '@/services/hereApiService'
+// import {
+//   fetchSuggestions,
+//   fetchGeocode,
+//   fetchRoute
+// } from '@/services/hereApiService'
 // import RouteMap from './RouteMap'
 // import TransportOptions from './TransportOptions'
 
@@ -231,7 +224,8 @@ export default function FormRoute() {
 //   lat: number
 //   lng: number
 // }
-
+// // !A ver, problema. Para hacer la llamada fetch podemos dejarlo como está y que en hereApiService.ts siempre llame con el modo bicicleta,
+// //!  o que de alguna forma llamemos desde transportOptions.tsx cuando el usuario elija el modo de transporte pero habría que tener cuidado porque el RouteMap.tsx necesita del setRouteData y eso para poder pintar la ruta en el mapa... UN POCO LÍO. Por cierto, ya no se pinta la línea recta, habría que arreglarlo también😅
 // export default function FormRoute() {
 //   const [origen, setOrigen] = useState<string>('')
 //   const [destino, setDestino] = useState<string>('')
@@ -239,13 +233,13 @@ export default function FormRoute() {
 //   const [destinoCoords, setDestinoCoords] = useState<Coordinates | null>(null)
 //   const [origenSuggestions, setOrigenSuggestions] = useState<Suggestion[]>([])
 //   const [destinoSuggestions, setDestinoSuggestions] = useState<Suggestion[]>([])
+//   const [routeData, setRouteData] = useState<string | null>(null)
 
 //   const origenRef = useRef<HTMLDivElement>(null)
 //   const destinoRef = useRef<HTMLDivElement>(null)
 
 //   const coordinates = { lat: 52.5228, lon: 13.4124 }
 
-//   // Manejar cambio de input
 //   const handleInputChange = async (
 //     value: string,
 //     setValue: React.Dispatch<React.SetStateAction<string>>,
@@ -269,7 +263,6 @@ export default function FormRoute() {
 //     }
 //   }
 
-//   // Manejar selección de sugerencia y obtener coordenadas
 //   const handleSuggestionClick = async (
 //     suggestion: Suggestion,
 //     setValue: React.Dispatch<React.SetStateAction<string>>,
@@ -306,10 +299,33 @@ export default function FormRoute() {
 //     return () => document.removeEventListener('mousedown', handleClickOutside)
 //   }, [])
 
+//   useEffect(() => {
+//     const fetchRouteData = async () => {
+//       if (origenCoords && destinoCoords) {
+//         try {
+//           const data = await fetchRoute(
+//             origenCoords.lat,
+//             origenCoords.lng,
+//             destinoCoords.lat,
+//             destinoCoords.lng
+//           )
+//           console.log(data)
+
+//           setRouteData(data)
+//           console.log(routeData)
+//         } catch (error) {
+//           console.error('Error al obtener los datos de la ruta:', error)
+//         }
+//       }
+//     }
+
+//     fetchRouteData()
+//   }, [origenCoords, destinoCoords])
+
 //   return (
 //     <div className='flex flex-col gap-6 mt-8'>
 //       <div className='flex gap-6 p-2 w-full sm:w-1/2 mx-auto bg-gray-800 text-foreground rounded-md flex-wrap shadow-lg shadow-[var(--shadow)]'>
-//         <div className='w-full flex flex-row flex-wrap justify-around gap-2  max-w-4xl mx-auto bg-gray-800'>
+//         <div className='w-full flex flex-row flex-wrap justify-around gap-2 max-w-4xl mx-auto bg-gray-800'>
 //           <div ref={origenRef} className='relative'>
 //             <label htmlFor='origen' className='text-md text-[var(--terciary)]'>
 //               Origen
@@ -391,8 +407,18 @@ export default function FormRoute() {
 //           </div>
 //         </div>
 //       </div>
-//       <TransportOptions origin={origenCoords} destination={destinoCoords} />
-//       <RouteMap origin={origenCoords} destination={destinoCoords} />
+
+//       <TransportOptions
+//         origin={origenCoords}
+//         destination={destinoCoords}
+//         setRouteData={setRouteData}
+//       />
+
+//       <RouteMap
+//         origin={origenCoords}
+//         destination={destinoCoords}
+//         routeData={routeData}
+//       />
 //     </div>
 //   )
 // }

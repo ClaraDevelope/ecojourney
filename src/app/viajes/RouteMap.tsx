@@ -2,8 +2,6 @@ import React, { useEffect } from 'react'
 import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-
-// Función para decodificar la polilínea (sin librerías externas)
 const decodePolyline = (encoded: string) => {
   let index = 0
   const len = encoded.length
