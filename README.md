@@ -99,22 +99,27 @@ yarn dev
 
 ### 5. Accede a la aplicación:
 
-Abre http://localhost:3000 en tu navegador para ver el resultado.
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver el resultado.
 
-📚 Documentación Técnica
-Tecnologías Utilizadas
-Framework : Next.js
-Estilización : Tailwind CSS
-APIs Externas :
-HERE Maps : Para geolocalización y autocompletado.
+📚 **Documentación Técnica**
 
-🎓 Recursos de Aprendizaje
+### Tecnologías Utilizadas
+
+- **Framework**: Next.js
+- **Estilización**: Tailwind CSS
+- **APIs Externas**:
+  - [HERE Maps](https://www.here.com/docs/): Para geolocalización y autocompletado.
+  - [Leaflet](https://leafletjs.com/reference.html): Para visualización de mapas interactivos.
+  - [OpenRouteService](https://openrouteservice.org/sign-up/): Para cálculo de rutas y distancias.
+
+🎓 **Recursos de Aprendizaje**  
 Si deseas profundizar en las tecnologías utilizadas en este proyecto, aquí tienes algunos recursos útiles:
 
-- Next.js Documentation [https://nextjs.org/docs?spm=5aebb161.5ebf13d8.0.0.532140903ZU3PC]
-- Tailwind CSS Documentation [https://tailwindcss.com/docs/installation/using-vite?spm=5aebb161.5ebf13d8.0.0.532140903ZU3PC]
-- HERE Maps Developer Guide [https://www.here.com/docs/?spm=5aebb161.5ebf13d8.0.0.532140903ZU3PC]
-- Chart.js Documentation [https://www.chartjs.org/docs/latest/]
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [HERE Maps Developer Guide](https://www.here.com/docs/)
+- [Leaflet Documentation](https://leafletjs.com/reference.html)
+- [OpenRouteService API](https://openrouteservice.org/sign-up/)
 
 🌐 Despliegue
 La manera más sencilla de desplegar tu aplicación Next.js es utilizando la plataforma Vercel . Vercel es el creador de Next.js y ofrece integración nativa para proyectos de este framework.
