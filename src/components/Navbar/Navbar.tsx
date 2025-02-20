@@ -8,9 +8,8 @@ export default function Navbar() {
 
   const links = [
     { href: '/', label: 'Inicio' },
-    { href: '/viajes', label: 'Viajes' },
-    { href: '/recomendaciones', label: 'Recomendaciones' },
-    { href: '#', label: 'Calendario' }
+    { href: '/mapa', label: 'Mapa' },
+    { href: '/huella-global', label: 'Huella Global' }
   ]
 
   return (

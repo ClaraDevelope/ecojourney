@@ -21,6 +21,10 @@ export default function FormRoute() {
   const [destinoCoords, setDestinoCoords] = useState<Coordinates | null>(null)
   const [origenSuggestions, setOrigenSuggestions] = useState<Suggestion[]>([])
   const [destinoSuggestions, setDestinoSuggestions] = useState<Suggestion[]>([])
+  const [selectedTransport, setSelectedTransport] = useState<string | null>(
+    null
+  )
+  const [co2Emissions, setCo2Emissions] = useState<number | null>(null)
 
   const origenRef = useRef<HTMLDivElement>(null)
   const destinoRef = useRef<HTMLDivElement>(null)
@@ -87,6 +91,45 @@ export default function FormRoute() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  useEffect(() => {
+    if (origenCoords && destinoCoords && selectedTransport) {
+      const R = 6371 // Radio de la Tierra en kilómetros
+      const dLat = (destinoCoords.lat - origenCoords.lat) * (Math.PI / 180)
+      const dLon = (destinoCoords.lng - origenCoords.lng) * (Math.PI / 180)
+
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(origenCoords.lat * (Math.PI / 180)) *
+          Math.cos(destinoCoords.lat * (Math.PI / 180)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2)
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+
+      const distance = R * c // Distancia en kilómetros
+
+      // Calcular CO2
+      const transportOptions = [
+        { mode: 'Coche Diesel', co2Factor: 160 },
+        { mode: 'Coche Gasolina', co2Factor: 120 },
+        { mode: 'Coche Eléctrico', co2Factor: 0 },
+        { mode: 'Bicicleta', co2Factor: 0 },
+        { mode: 'Coche Compartido', co2Factor: 60 },
+        { mode: 'Tren', co2Factor: 30 },
+        { mode: 'Autobús', co2Factor: 70 },
+        { mode: 'Avión (Corto Alcance)', co2Factor: 285 }
+      ]
+
+      const selectedOption = transportOptions.find(
+        (option) => option.mode === selectedTransport
+      )
+
+      if (selectedOption) {
+        const emissions = distance * selectedOption.co2Factor
+        setCo2Emissions(emissions)
+      }
+    }
+  }, [origenCoords, destinoCoords, selectedTransport])
 
   return (
     <div className='flex flex-col gap-6 mt-8'>
@@ -173,8 +216,21 @@ export default function FormRoute() {
           </div>
         </div>
       </div>
-      <TransportOptions origin={origenCoords} destination={destinoCoords} />
-      <RouteMap origin={origenCoords} destination={destinoCoords} />
+      <TransportOptions
+        origin={origenCoords}
+        destination={destinoCoords}
+        onTransportChange={setSelectedTransport}
+      />
+      {co2Emissions !== null && (
+        <div className='m-auto p-4 text-white'>
+          <p>Emisiones de CO2 estimadas: {co2Emissions.toFixed(2)} g/km</p>
+        </div>
+      )}
+      <RouteMap
+        origin={origenCoords}
+        destination={destinoCoords}
+        selectedTransport={selectedTransport}
+      />
     </div>
   )
 }
