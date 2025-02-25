@@ -2,77 +2,83 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { signIn, signOut, useSession } from 'next-auth/react'
+import Image from 'next/image'
+import { useState } from 'react'
+import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline'
 
 export default function Navbar() {
   const pathname = usePathname()
+  const { data: session } = useSession() // Obtener la sesión del usuario
+  const [isOpen, setIsOpen] = useState(false) // Estado para controlar el menú
 
   const links = [
     { href: '/', label: 'Inicio' },
-    { href: '/mapa', label: 'Mapa' },
-    { href: '/huella-global', label: 'Huella Global' }
+    { href: '/mapa', label: 'Mapa' }
   ]
+
+  // Si el usuario está logueado, añadimos "Mis Rutas" a los links
+  if (session) {
+    links.push({ href: '/mis-rutas', label: 'Mis Rutas' })
+  }
 
   return (
     <nav className='bg-gray-800'>
       <div className='mx-auto max-w-7xl px-2 sm:px-6 lg:px-8'>
         <div className='relative flex h-16 items-center justify-between'>
-          <div className='absolute inset-y-0 left-0 flex items-center sm:hidden'>
-            <button
-              type='button'
-              className='relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-none focus:ring-inset'
-              aria-controls='mobile-menu'
-              aria-expanded='false'
-            >
-              <span className='absolute -inset-0.5'></span>
-              <span className='sr-only'>Open main menu</span>
-              <svg
-                className='block size-6'
-                fill='none'
-                viewBox='0 0 24 24'
-                strokeWidth='1.5'
-                stroke='currentColor'
-                aria-hidden='true'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  d='M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5'
-                />
-              </svg>
-              <svg
-                className='hidden size-6'
-                fill='none'
-                viewBox='0 0 24 24'
-                strokeWidth='1.5'
-                stroke='currentColor'
-                aria-hidden='true'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  d='M6 18 18 6M6 6l12 12'
-                />
-              </svg>
-            </button>
-          </div>
-          <div className='flex flex-1 items-center justify-center sm:items-stretch sm:justify-start'>
-            <div className='hidden sm:ml-6 sm:block'>
-              <div className='flex space-x-4'>
-                {links.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`rounded-md px-3 py-2 text-sm font-medium ${
-                      pathname === link.href
-                        ? 'bg-gray-900 text-white'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
+          <div className='flex flex-1 items-center justify-start'>
+            <div className='flex space-x-4'>
+              {links.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`rounded-md px-3 py-2 text-sm font-medium ${
+                    pathname === link.href
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
+          </div>
+
+          {/* Botón de inicio de sesión / Avatar */}
+          <div className='relative'>
+            {session ? (
+              <div className='relative flex items-center gap-3'>
+                {/* Avatar del usuario */}
+                <Image
+                  src={session.user?.image || '/default-avatar.png'}
+                  alt={session.user?.name || 'Avatar'}
+                  width={40}
+                  height={40}
+                  className='rounded-full border-2 border-gray-400 cursor-pointer hover:opacity-80 transition'
+                  onClick={() => setIsOpen(!isOpen)}
+                />
+
+                {/* Menú desplegable */}
+                {isOpen && (
+                  <div className='absolute right-0 mt-20 w-44 bg-gray-700 text-white rounded-md shadow-lg z-50'>
+                    <button
+                      onClick={() => signOut()}
+                      className='flex items-center w-full px-4 py-2 text-sm hover:bg-gray-600 transition'
+                    >
+                      <ArrowRightOnRectangleIcon className='w-5 h-5 mr-2' />
+                      Cerrar sesión
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => signIn('google')}
+                className='rounded-md px-4 py-2 text-sm font-medium text-gray-300 border-2 border-solid border-gray-400 hover:bg-gray-700 hover:text-white transition'
+              >
+                Iniciar Sesión
+              </button>
+            )}
           </div>
         </div>
       </div>

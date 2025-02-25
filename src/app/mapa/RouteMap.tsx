@@ -21,7 +21,7 @@ const RouteMap: React.FC<Props> = ({
   selectedTransport
 }) => {
   const [zoom, setZoom] = useState(8) // Estado para el nivel de zoom
-  const [route, setRoute] = useState<[number, number][] | null>(null) // Estado para la ruta
+  const [route, setRoute] = useState<LatLngExpression[] | null>(null) // Estado para la ruta
 
   useEffect(() => {
     if (origin && destination && selectedTransport) {
@@ -56,28 +56,30 @@ const RouteMap: React.FC<Props> = ({
             mode = 'cycling-regular'
             break
           case 'Caminar':
-            mode = 'walking'
+            mode = 'foot-walking'
             break
           case 'Tren':
-            mode = 'driving-car'
-            break
           case 'Autobús':
-            mode = 'driving-car'
-            break
           case 'Avión (Corto Alcance)':
-            mode = 'driving-car'
+            mode = 'public-transport'
             break
           default:
             return
         }
 
-        const url = `https://api.openrouteservice.org/v2/directions/${mode}?api_key=${process.env.NEXT_PUBLIC_OPENROUTE_API_KEY}&start=${origin.lng},${origin.lat}&end=${destination.lng},${destination.lat}`
-        const response = await fetch(url, { method: 'GET' })
-        const data = await response.json()
+        try {
+          const url = `https://api.openrouteservice.org/v2/directions/${mode}?api_key=${process.env.NEXT_PUBLIC_OPENROUTE_API_KEY}&start=${origin.lng},${origin.lat}&end=${destination.lng},${destination.lat}`
+          const response = await fetch(url)
+          const data = await response.json()
 
-        if (data.features && data.features.length > 0) {
-          const routeSteps = data.features[0].geometry.coordinates
-          setRoute(routeSteps)
+          if (data.features && data.features.length > 0) {
+            const routeSteps = data.features[0].geometry.coordinates.map(
+              ([lng, lat]: [number, number]) => [lat, lng] as LatLngExpression
+            )
+            setRoute(routeSteps)
+          }
+        } catch (error) {
+          console.error('Error al obtener la ruta:', error)
         }
       }
 
@@ -86,11 +88,11 @@ const RouteMap: React.FC<Props> = ({
   }, [origin, destination, selectedTransport])
 
   return (
-    <div className='relative w-full h-96 overflow-hidden rounded-md'>
+    <div className='relative w-full h-96 sm:h-[500px] overflow-hidden rounded-md sm:rounded-lg'>
       <MapContainer
         center={origin || { lat: 41.65, lng: -4.72 }} // Usamos el origen como centro
         zoom={zoom} // Pasamos el estado de zoom
-        style={{ height: '100%', width: '100%' }}
+        style={{ height: '100%', width: '100vw' }} // Ocupar todo el ancho en móvil
         key={`${origin?.lat}-${origin?.lng}-${zoom}`} // Aseguramos que el mapa se re-renderice cuando el zoom cambie
       >
         <TileLayer
@@ -98,49 +100,12 @@ const RouteMap: React.FC<Props> = ({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
 
-        {origin && (
-          <Marker
-            position={origin}
-            icon={L.icon({
-              iconUrl: '/marker-icon.png',
-              iconSize: [25, 41],
-              iconAnchor: [12, 41],
-              popupAnchor: [1, -34],
-              shadowUrl: '/marker-shadow.png',
-              shadowSize: [41, 41],
-              shadowAnchor: [12, 41]
-            })}
-          />
-        )}
+        {origin && <Marker position={origin} />}
 
-        {destination && (
-          <Marker
-            position={destination}
-            icon={L.icon({
-              iconUrl: '/marker-icon.png',
-              iconSize: [25, 41],
-              iconAnchor: [12, 41],
-              popupAnchor: [1, -34],
-              shadowUrl: '/marker-shadow.png',
-              shadowSize: [41, 41],
-              shadowAnchor: [12, 41]
-            })}
-          />
-        )}
+        {destination && <Marker position={destination} />}
 
-        {origin && destination && route && route.length > 0 && (
-          <Polyline
-            positions={route
-              .map((step) => {
-                const [lng, lat] = step // Usamos directamente las coordenadas [lng, lat]
-                console.log(`Coordenadas paso: ${lat}, ${lng}`) // Verifica las coordenadas
-                return [lat, lng] as LatLngExpression // Explicitamos que la posición es LatLngExpression
-              })
-              .filter(
-                (position): position is LatLngExpression => position !== null
-              )} // Filtramos solo posiciones válidas
-            color='blue'
-          />
+        {route && route.length > 0 && (
+          <Polyline positions={route} color='blue' />
         )}
       </MapContainer>
     </div>
