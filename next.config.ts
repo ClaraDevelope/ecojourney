@@ -4,8 +4,9 @@ const nextConfig = {
     serverActions: {} // Corregido para evitar el warning
   },
   images: {
-    domains: ['lh3.googleusercontent.com'] // 👈 Permite imágenes desde Google
-  }
+    domains: ['lh3.googleusercontent.com', 'maps.googleapis.com']
+  },
+  pageExtensions: ['tsx', 'ts'] // 🔹 Asegura que detecte archivos .tsx y .ts
 }
 
 export default nextConfig

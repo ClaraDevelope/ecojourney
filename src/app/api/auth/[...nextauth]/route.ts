@@ -14,9 +14,22 @@ const handler = NextAuth({
   session: {
     strategy: 'jwt'
   },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.email = user.email // 🔥 Guardamos el email en el token
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.email = token.email // 🔥 Pasamos el email a la sesión
+      }
+      return session
+    }
+  },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: true // Para ver más detalles en la consola
+  debug: true
 })
 
-// Next.js en `app/` usa `GET` y `POST` en lugar de `default export`
 export { handler as GET, handler as POST }

@@ -48,6 +48,8 @@ export default function FormRoute() {
       </p>
       <SaveRouteButton
         origin={originCoords}
+        originName={origin}
+        destinationName={destination}
         destination={destinationCoords}
         transportMode={transportMode}
       />
