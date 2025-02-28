@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Special_Elite } from 'next/font/google'
+import { Special_Elite, Poppins } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar/Navbar'
 import Footer from '@/components/Footer/Footer'
@@ -8,6 +8,12 @@ import SessionWrapper from '@/components/SessionWrapper/SessionWrapper'
 const specialElite = Special_Elite({
   variable: '--special-elite-regular',
   weight: '400',
+  subsets: ['latin']
+})
+
+const poppins = Poppins({
+  variable: '--poppins',
+  weight: ['400', '600', '700'],
   subsets: ['latin']
 })
 
@@ -22,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang='es' className={specialElite.variable}>
+    <html lang='es' className={`${specialElite.variable} ${poppins.variable}`}>
       <body className={`min-h-screen antialiased`}>
         <SessionWrapper>
           {' '}
