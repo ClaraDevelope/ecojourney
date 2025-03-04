@@ -78,7 +78,7 @@ export default function RouteDetailPage() {
     )
 
   return (
-    <div className='p-6 min-h-screen flex flex-col items-center'>
+    <div className='mt-20 p-6 min-h-screen flex flex-col items-center'>
       <h1 className='text-3xl font-bold mb-4 text-center text-[var(--terciary)]'>
         Detalle de la Ruta
       </h1>

@@ -59,7 +59,7 @@ export default function MisMapas() {
 
   return (
     <div className='p-6 min-h-screen'>
-      <h1 className='text-3xl font-bold mb-6 text-center text-[var(--terciary)]'>
+      <h1 className='text-3xl font-bold mt-20 mb-6 text-center'>
         Mis Rutas Guardadas
       </h1>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>

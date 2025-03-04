@@ -10,7 +10,7 @@ export default function Footer() {
       <div className='container mx-auto flex flex-col items-center justify-center space-y-2 text-center text-gray-300'>
         <p className='flex items-center space-x-1'>
           <span>Este proyecto ha sido creado con</span>
-          <FaHeart className='text-red-500' />
+          <FaHeart className='text-green-400' />
           <span>por Clara Manzano Corona</span>
         </p>
         <div className='flex space-x-4'>
