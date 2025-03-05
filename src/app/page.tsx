@@ -61,13 +61,34 @@ export default function Home() {
           Planifica tu viaje
         </Link>
       </div>
+      <div className='relative w-full flex flex-col items-center mt-16 '>
+        <Image
+          src='/carretera.png'
+          alt='Camino sinuoso'
+          width={600}
+          height={150}
+          className='relative z-0 drop-shadow-lg opacity-90 lg:rounded-lg sm:rounded-none border-transparent border-1 outline-dotted outline-4 outline-[#fff7b0] 
+          shadow-[0_0_2px_#fff,inset_0_0_2px_#fff,0_0_5px_#ffff00,0_0_15px_#ff9e00,0_0_30px_#e6c619]'
+        />
+
+        <Image
+          src='/furgo.webp'
+          alt='Furgoneta viajera'
+          width={160}
+          height={160}
+          className='absolute z-10 drop-shadow-lg 
+             lg:top-[-40px] lg:bottom-[25px] lg:w-[160px] lg:h-[290px] 
+             md:top-[-40px] md:bottom-[25px] md:w-[160px] md:h-[290px]
+              sm:w-[70px] sm:h-[140px] !sm:bottom-0'
+        />
+      </div>
 
       <div className='mt-16 flex flex-col items-center text-center px-6 pb-10'>
         <h4 className='text-2xl font-semibold text-[#D0DCD0] mb-6'>
           ¿Por qué EcoJourney?
         </h4>
         <div className='flex flex-col md:flex-row justify-center gap-10 max-w-4xl'>
-          <div className='flex flex-col items-center bg-white/10 backdrop-blur-lg p-6 rounded-xl shadow-lg border border-white/20 hover:scale-105 transition'>
+          <div className='flex flex-col items-center bg-white/10 p-6 rounded-xl shadow-lg border border-white/20 hover:scale-105 transition'>
             <GlobeAltIcon className='w-10 h-10 text-[#2db37c]' />
             <p className='text-lg font-medium mt-2 text-[#D0DCD0]'>
               Impacto ecológico
@@ -77,7 +98,7 @@ export default function Home() {
               recomendaciones para reducirla.
             </p>
           </div>
-          <div className='flex flex-col items-center bg-white/10 backdrop-blur-lg p-6 rounded-xl shadow-lg border border-white/20 hover:scale-105 transition'>
+          <div className='flex flex-col items-center bg-white/10 p-6 rounded-xl shadow-lg border border-white/20 hover:scale-105 transition'>
             <MapIcon className='w-10 h-10 text-[#2db37c]' />
             <p className='text-lg font-medium mt-2 text-[#D0DCD0]'>
               Rutas optimizadas
@@ -86,7 +107,7 @@ export default function Home() {
               Encuentra y compara las rutas más eficientes y sostenibles.
             </p>
           </div>
-          <div className='flex flex-col items-center bg-white/10 backdrop-blur-lg p-6 rounded-xl shadow-lg border border-white/20 hover:scale-105 transition'>
+          <div className='flex flex-col items-center bg-white/10 p-6 rounded-xl shadow-lg border border-white/20 hover:scale-105 transition'>
             <BookmarkIcon className='w-10 h-10 text-[#2db37c]' />
             <p className='text-lg font-medium mt-2 text-[#D0DCD0]'>
               Tus rutas favoritas
