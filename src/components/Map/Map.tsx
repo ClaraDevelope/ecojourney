@@ -1,5 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet'
 import L, { LatLngExpression, Icon } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -28,8 +29,11 @@ interface MapProps {
 }
 
 export default function Map({ origin, destination, transportMode }: MapProps) {
+  const { data: session } = useSession() // 🔹 Obtenemos la sesión
   const [zoom, setZoom] = useState(8)
   const [route, setRoute] = useState<LatLngExpression[] | null>(null)
+
+  const ENABLE_FETCH = false // ❌ Cambia a true cuando quieras activar la API
 
   useEffect(() => {
     if (origin && destination && transportMode) {
@@ -53,8 +57,18 @@ export default function Map({ origin, destination, transportMode }: MapProps) {
 
       setZoom(newZoom)
 
-      // 🔹 Obtener ruta desde OpenRouteService
+      // 🔹 Obtener ruta desde OpenRouteService a través del backend
       const fetchRoute = async () => {
+        if (!ENABLE_FETCH) {
+          console.log('🚧 fetchRoute desactivado temporalmente')
+          return
+        }
+
+        if (!session?.user?.email) {
+          console.error('⛔ No hay usuario autenticado')
+          return
+        }
+
         let mode = ''
         switch (transportMode) {
           case 'Coche Diesel':
@@ -78,8 +92,15 @@ export default function Map({ origin, destination, transportMode }: MapProps) {
         }
 
         try {
-          const url = `https://api.openrouteservice.org/v2/directions/${mode}?api_key=${process.env.NEXT_PUBLIC_OPENROUTE_API_KEY}&start=${origin.lng},${origin.lat}&end=${destination.lng},${destination.lat}`
-          const response = await fetch(url)
+          const url = `http://localhost:5000/api/routes/fetch-route?mode=${mode}&start=${origin.lng},${origin.lat}&end=${destination.lng},${destination.lat}`
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.user.email}` // 🔹 Enviamos el email como token
+            }
+          })
+
           const data = await response.json()
 
           if (data.features && data.features.length > 0) {
@@ -95,7 +116,7 @@ export default function Map({ origin, destination, transportMode }: MapProps) {
 
       fetchRoute()
     }
-  }, [origin, destination, transportMode])
+  }, [origin, destination, transportMode, session])
 
   return (
     <div className='relative w-full h-full'>

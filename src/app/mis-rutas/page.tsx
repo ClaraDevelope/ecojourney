@@ -50,12 +50,26 @@ export default function MisMapas() {
     fetchRutas()
   }, [session])
 
-  if (loading)
-    return <p className='text-center text-white'>Cargando rutas...</p>
-  if (rutas.length === 0)
+  if (loading) {
     return (
-      <p className='text-center text-white'>No tienes rutas guardadas aún.</p>
+      <div className='flex justify-center items-center min-h-screen bg-gray-900'>
+        <div className='flex flex-col items-center space-y-4'>
+          <div className='animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500'></div>
+          <p className='text-white text-lg animate-pulse'>Cargando rutas...</p>
+        </div>
+      </div>
     )
+  }
+
+  if (rutas.length === 0) {
+    return (
+      <div className='flex justify-center items-center min-h-screen bg-gray-900'>
+        <p className='text-center text-white text-lg'>
+          No tienes rutas guardadas aún.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className='p-6 min-h-screen'>

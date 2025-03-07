@@ -126,16 +126,29 @@ export default function Navbar() {
           </Link>
         )}
 
-        {/* Avatar / Botón de inicio de sesión */}
+        {/* Avatar / Botón de inicio de sesión con menú desplegable en móvil */}
         {session ? (
-          <Image
-            src={session.user?.image || '/default-avatar.png'}
-            alt={session.user?.name || 'Avatar'}
-            width={36}
-            height={36}
-            className='rounded-full border-2 border-[var(--terciary)] cursor-pointer'
-            onClick={() => setIsOpen(!isOpen)}
-          />
+          <div className='relative'>
+            <Image
+              src={session.user?.image || '/default-avatar.png'}
+              alt={session.user?.name || 'Avatar'}
+              width={36}
+              height={36}
+              className='rounded-full border-2 border-[var(--terciary)] cursor-pointer'
+              onClick={() => setIsOpen(!isOpen)}
+            />
+            {isOpen && (
+              <div className='absolute right-0 mt-2 w-36 bg-gray-800 text-white rounded-md shadow-lg z-50'>
+                <button
+                  onClick={() => signOut()}
+                  className='flex items-center w-full px-4 py-2 text-sm hover:bg-gray-700 transition'
+                >
+                  <ArrowRightOnRectangleIcon className='w-5 h-5 mr-2' />
+                  Cerrar sesión
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <button
             onClick={() => signIn('google')}

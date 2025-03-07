@@ -2,14 +2,15 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import { MapPinIcon, ArrowRightIcon } from '@heroicons/react/24/solid'
+import { MapPinIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 import { useSession } from 'next-auth/react'
+import Notes from './notes'
+import PublishRoute from './publishButton'
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'
 
-// 🔹 Importar Leaflet de forma dinámica (Next.js no lo soporta en SSR)
-const Map = dynamic(() => import('../../../components/Map/Map'), { ssr: false })
+const Map = dynamic(() => import('@/components/Map/Map'), { ssr: false })
 
 interface Route {
   _id: string
@@ -25,34 +26,19 @@ export default function RouteDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    console.log('🔹 ID obtenido de useParams():', id)
-
-    if (!id) {
-      console.error('❌ No se obtuvo un ID válido en useParams()')
-      return
-    }
-
-    if (!session?.user?.email) {
-      console.error('❌ No hay un email de usuario disponible')
-      return
-    }
+    if (!id || !session?.user?.email) return
 
     const fetchRuta = async () => {
       try {
-        console.log('📡 Solicitando ruta a:', `${BACKEND_URL}/api/routes/${id}`)
-
         const res = await fetch(`${BACKEND_URL}/api/routes/${id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.user?.email || ''}`
+            Authorization: `Bearer ${session?.user?.email}`
           }
         })
-
         if (!res.ok) throw new Error('Error obteniendo la ruta')
-
         const data = await res.json()
-        console.log('✅ Ruta obtenida:', data) // <-- Verificar la respuesta de la API
         setRuta(data)
       } catch (error) {
         console.error('🚨 Error obteniendo la ruta:', error)
@@ -60,51 +46,67 @@ export default function RouteDetailPage() {
         setLoading(false)
       }
     }
-
     fetchRuta()
   }, [id, session])
 
-  if (loading)
+  if (loading) {
     return (
-      <p className='mt-20 text-center text-white min-h-screen'>
-        Cargando ruta...
-      </p>
+      <div className='flex justify-center items-center min-h-screen bg-gray-900'>
+        <div className='flex flex-col items-center space-y-4'>
+          <div className='animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500'></div>
+          <p className='text-white text-lg animate-pulse'>Cargando ruta...</p>
+        </div>
+      </div>
     )
-  if (!ruta)
+  }
+
+  if (!ruta) {
     return (
-      <p className='mt-20 text-center text-white min-h-screen'>
-        Ruta no encontrada.
-      </p>
+      <div className='flex justify-center items-center min-h-screen bg-gray-900'>
+        <p className='text-center text-white text-lg'>Ruta no encontrada.</p>
+      </div>
     )
+  }
 
   return (
-    <div className='mt-20 p-6 min-h-screen flex flex-col items-center'>
-      <h1 className='text-3xl font-bold mb-4 text-center text-[var(--terciary)]'>
-        Detalle de la Ruta
-      </h1>
+    <div className='mt-[100px] p-6 min-h-screen w-full lg:container lg:mx-auto'>
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 w-full'>
+        {/* 📌 Columna izquierda - Info de la ruta */}
+        <div className='bg-gray-800 p-5 rounded-sm shadow-md border border-gray-700 w-full max-w-none lg:w-auto'>
+          <h2 className='text-lg font-semibold text-white mb-4'>
+            Detalle de la Ruta
+          </h2>
 
-      <div className='bg-gray-800 text-white p-6 rounded-md shadow-lg w-full max-w-2xl'>
-        <h2 className='text-lg font-semibold flex items-center gap-2'>
-          <MapPinIcon className='w-5 h-5 text-red-500' />
-          {ruta.origin.name}
-          <ArrowRightIcon className='w-6 h-6 text-gray-300' />
-          {ruta.destination.name}
-        </h2>
+          {/* 📍 Datos de la ruta */}
+          <div className='flex items-center text-sm text-gray-300 mb-2'>
+            <MapPinIcon className='w-5 h-5 text-red-500 mr-2' />
+            <span>{ruta.origin.name}</span>
+            <span className='mx-2 text-gray-400'>→</span>
+            <span>{ruta.destination.name}</span>
+          </div>
 
-        <p className='text-gray-300 mt-2'>
-          🚀 Transporte: {ruta.transportMode}
-        </p>
-        <p className='text-sm text-gray-400 mt-2'>
-          📍 Lat: {ruta.origin.lat.toFixed(2)}, Lng:{' '}
-          {ruta.origin.lng.toFixed(2)}
-        </p>
-        <div className='mt-6 w-full h-[400px] rounded-md overflow-hidden'>
-          <Map
-            origin={ruta.origin}
-            destination={ruta.destination}
-            transportMode={ruta.transportMode}
-          />
+          <div className='flex items-center text-sm text-gray-300 mb-4'>
+            <GlobeAltIcon className='w-5 h-5 text-blue-400 mr-2' />
+            <span>{ruta.transportMode}</span>
+          </div>
+
+          {/* 🗺️ Mapa */}
+          <div className='w-full h-64 rounded-sm overflow-hidden shadow-md'>
+            <Map
+              origin={ruta.origin}
+              destination={ruta.destination}
+              transportMode={ruta.transportMode}
+            />
+          </div>
+
+          {/* 🚀 Botón de publicación */}
+          <div className='mt-4'>
+            <PublishRoute routeId={ruta._id} />
+          </div>
         </div>
+
+        {/* 📝 Columna derecha - Notas */}
+        <Notes routeId={ruta._id} />
       </div>
     </div>
   )
