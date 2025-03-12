@@ -5,7 +5,12 @@ import { usePathname } from 'next/navigation'
 import { signIn, signOut, useSession } from 'next-auth/react'
 import Image from 'next/image'
 import { useState } from 'react'
-import { HomeIcon, GlobeAltIcon, MapIcon } from '@heroicons/react/24/solid'
+import {
+  HomeIcon,
+  GlobeAltIcon,
+  MapIcon,
+  FingerPrintIcon
+} from '@heroicons/react/24/solid'
 import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline'
 
 export default function Navbar() {
@@ -14,7 +19,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <nav className='fixed top-0 left-0 right-0 z-50 bg-transparent backdrop-blur-lg text-white py-4 px-6 flex justify-between items-center'>
+    <nav className='fixed top-0 left-0 right-0 z-[9999999999] bg-transparent backdrop-blur-lg text-white py-4 px-6 flex justify-between items-center'>
       {/* Logo o título centrado en desktop */}
       <div className='hidden md:flex justify-center absolute left-1/2 transform -translate-x-1/2 text-2xl font-bold tracking-wide'>
         <span className='text-[var(--terciary)]'>Eco</span>Journey
@@ -41,6 +46,16 @@ export default function Navbar() {
           }`}
         >
           <GlobeAltIcon className='w-5 h-5' /> Mapa
+        </Link>
+        <Link
+          href='/descubre' // ✅ Nueva ruta añadida
+          className={`flex items-center gap-2 ${
+            pathname === '/descubre'
+              ? 'text-[var(--terciary)]'
+              : 'hover:text-gray-300'
+          }`}
+        >
+          <FingerPrintIcon className='w-5 h-5' /> Descubre
         </Link>
         {session && (
           <Link
@@ -111,6 +126,17 @@ export default function Navbar() {
         >
           <GlobeAltIcon className='w-6 h-6' />
           <span className='text-xs'>Mapa</span>
+        </Link>
+        <Link
+          href='/descubre' // ✅ Nueva ruta añadida en móvil
+          className={`flex flex-col items-center ${
+            pathname === '/descubre'
+              ? 'text-[var(--terciary)]'
+              : 'hover:text-gray-300'
+          }`}
+        >
+          <FingerPrintIcon className='w-6 h-6' />
+          <span className='text-xs'>Descubre</span>
         </Link>
         {session && (
           <Link

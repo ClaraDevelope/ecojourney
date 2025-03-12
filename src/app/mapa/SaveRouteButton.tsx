@@ -1,7 +1,11 @@
-import { useState, useEffect } from 'react'
+'use client'
+
+import { useState } from 'react'
 import { signIn, useSession } from 'next-auth/react'
-import { HeartIcon } from '@heroicons/react/24/outline'
-import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid'
+import { BookmarkIcon, BookmarkSlashIcon } from '@heroicons/react/24/outline'
+import ErrorModal from '@/components/ErrorModal/ErrorModal'
+import SuccessModal from '@/components/SuccessModal/SuccessModal'
+import { apiFetch } from '@/utils/api' // ✅ Importamos apiFetch
 
 interface Coordinates {
   lat: number
@@ -11,13 +15,10 @@ interface Coordinates {
 interface Props {
   origin: Coordinates | null
   destination: Coordinates | null
-  originName: string // Nuevo
-  destinationName: string // Nuevo
+  originName: string
+  destinationName: string
   transportMode: string | null
 }
-
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'
 
 export default function SaveRouteButton({
   origin,
@@ -28,7 +29,8 @@ export default function SaveRouteButton({
 }: Props) {
   const { data: session } = useSession()
   const [isSaved, setIsSaved] = useState(false)
-  const [alertMessage, setAlertMessage] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSave = async () => {
     if (!session) {
@@ -37,13 +39,10 @@ export default function SaveRouteButton({
     }
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/routes/save`, {
+      await apiFetch(`/routes/save`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.user?.email}`
-        },
-        body: JSON.stringify({
+        token: session?.user?.email ?? undefined,
+        body: {
           origin: { name: originName, lat: origin?.lat, lng: origin?.lng },
           destination: {
             name: destinationName,
@@ -51,52 +50,50 @@ export default function SaveRouteButton({
             lng: destination?.lng
           },
           transportMode
-        })
+        }
       })
 
-      if (res.ok) {
-        setIsSaved(true)
-        setAlertMessage('¡Ruta guardada con éxito!') // Muestra el mensaje de éxito
-      } else {
-        console.error('Error guardando la ruta')
-      }
+      setIsSaved(true)
+      setSuccessMessage('¡Ruta guardada con éxito!')
     } catch (error) {
-      console.error('Error en la solicitud', error)
+      if (error instanceof Error) {
+        setError(
+          error.message.includes('409')
+            ? 'Esta ruta ya ha sido guardada. Dirígete a "Mis rutas" y la encontrarás. Puedes añadir o modificar datos desde ahí.'
+            : 'Tienes que rellenar todos los campos para guardar la ruta'
+        )
+      } else {
+        setError('Error en la solicitud, inténtalo de nuevo más tarde')
+      }
     }
   }
 
-  // Cierra la alerta automáticamente después de 3 segundos
-  useEffect(() => {
-    if (alertMessage) {
-      const timer = setTimeout(() => {
-        setAlertMessage(null)
-      }, 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [alertMessage])
-
   return (
     <>
-      {/* Alerta de éxito */}
-      {alertMessage && (
-        <div className='fixed top-5 right-5 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg transition-opacity animate-fadeIn'>
-          {alertMessage}
-        </div>
+      {/* Modal de error */}
+      {error && <ErrorModal message={error} onClose={() => setError(null)} />}
+
+      {/* Modal de éxito */}
+      {successMessage && (
+        <SuccessModal
+          message={successMessage}
+          onClose={() => setSuccessMessage(null)}
+        />
       )}
 
       {/* Botón de Guardar Ruta */}
       <button
         onClick={handleSave}
-        className={`flex items-center gap-2 px-6 py-3 text-white rounded-md shadow-md transition duration-300 transform ${
+        className={`flex items-center gap-2 px-4 py-3 bg-gray-800 text-white rounded-sm shadow-md transition duration-300 transform ${
           isSaved
-            ? 'bg-red-900 hover:bg-red-600'
-            : 'bg-red-600 hover:bg-red-500'
+            ? 'border-2 border-gray-600'
+            : 'border-2 border-gray-600 hover:bg-green-800 hover:border-transparent'
         } active:scale-95`}
       >
         {isSaved ? (
-          <HeartSolid className='w-5 h-5 text-white transition' />
+          <BookmarkSlashIcon className='w-5 h-5 text-white transition' />
         ) : (
-          <HeartIcon className='w-5 h-5 text-white transition' />
+          <BookmarkIcon className='w-5 h-5 text-white transition' />
         )}
         {isSaved ? 'Guardado' : 'Guardar ruta'}
       </button>

@@ -4,8 +4,8 @@ import { useSession } from 'next-auth/react'
 import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet'
 import L, { LatLngExpression, Icon } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { apiFetch } from '@/utils/api'
 
-// 🔹 Solución para el icono de Leaflet en Next.js
 const defaultIcon = new Icon({
   iconUrl:
     'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
@@ -33,7 +33,7 @@ export default function Map({ origin, destination, transportMode }: MapProps) {
   const [zoom, setZoom] = useState(8)
   const [route, setRoute] = useState<LatLngExpression[] | null>(null)
 
-  const ENABLE_FETCH = false // ❌ Cambia a true cuando quieras activar la API
+  const ENABLE_FETCH = true // ❌ Cambia a true cuando quieras activar la API
 
   useEffect(() => {
     if (origin && destination && transportMode) {
@@ -57,7 +57,6 @@ export default function Map({ origin, destination, transportMode }: MapProps) {
 
       setZoom(newZoom)
 
-      // 🔹 Obtener ruta desde OpenRouteService a través del backend
       const fetchRoute = async () => {
         if (!ENABLE_FETCH) {
           console.log('🚧 fetchRoute desactivado temporalmente')
@@ -92,16 +91,10 @@ export default function Map({ origin, destination, transportMode }: MapProps) {
         }
 
         try {
-          const url = `http://localhost:5000/api/routes/fetch-route?mode=${mode}&start=${origin.lng},${origin.lat}&end=${destination.lng},${destination.lat}`
-          const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.user.email}` // 🔹 Enviamos el email como token
-            }
-          })
-
-          const data = await response.json()
+          const data = await apiFetch(
+            `/routes/fetch-route?mode=${mode}&start=${origin.lng},${origin.lat}&end=${destination.lng},${destination.lat}`,
+            { token: session.user.email }
+          )
 
           if (data.features && data.features.length > 0) {
             const routeSteps = data.features[0].geometry.coordinates.map(

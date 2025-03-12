@@ -14,7 +14,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   }, [error])
 
   return (
-    <div className='min-h-screen text-center mt-20'>
+    <div className='min-h-screen text-center mt-[250px]'>
       <h1 className='text-5xl'>¡Algo salió mal!</h1>
       <p className='text-2xl'>Por favor, intenta de nuevo más tarde.</p>
       <button

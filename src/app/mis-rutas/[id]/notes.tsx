@@ -7,9 +7,8 @@ import {
   PencilSquareIcon,
   CheckIcon
 } from '@heroicons/react/24/solid'
-
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'
+import { apiFetch } from '@/utils/api'
+import DeleteConfirmationModal from './deleteConfirmationModal'
 
 interface Note {
   _id: string
@@ -40,13 +39,12 @@ export default function Notes({ routeId }: NotesProps) {
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
   const [editedText, setEditedText] = useState('')
   const [editedCategories, setEditedCategories] = useState<string[]>([])
+  const [noteToDelete, setNoteToDelete] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/routes/${routeId}/notes`)
-        if (!res.ok) throw new Error('Error obteniendo notas')
-        const data = await res.json()
+        const data = await apiFetch(`/routes/${routeId}/notes`)
         setNotes(data.notes)
       } catch (error) {
         console.error('🚨 Error obteniendo notas:', error)
@@ -76,18 +74,12 @@ export default function Notes({ routeId }: NotesProps) {
     setLoading(true)
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/routes/${routeId}/note`, {
+      const data = await apiFetch(`/routes/${routeId}/note`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.user?.email}`
-        },
-        body: JSON.stringify({ text: newNote, category: selectedCategories })
+        token: session?.user?.email ?? undefined,
+        body: { text: newNote, category: selectedCategories }
       })
 
-      if (!res.ok) throw new Error('Error añadiendo la nota')
-
-      const data = await res.json()
       setNotes(data.route.notes)
       setNewNote('')
       setSelectedCategories([])
@@ -98,24 +90,18 @@ export default function Notes({ routeId }: NotesProps) {
     }
   }
 
-  const handleDeleteNote = async (noteId: string) => {
-    if (!window.confirm('¿Seguro que quieres eliminar esta nota?')) return
+  const handleDeleteNote = async () => {
+    if (!noteToDelete) return
     setLoading(true)
 
     try {
-      const res = await fetch(
-        `${BACKEND_URL}/api/routes/${routeId}/notes/${noteId}`,
-        {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${session?.user?.email}`
-          }
-        }
-      )
+      await apiFetch(`/routes/${routeId}/notes/${noteToDelete}`, {
+        method: 'DELETE',
+        token: session?.user?.email ?? undefined
+      })
 
-      if (!res.ok) throw new Error('Error eliminando la nota')
-
-      setNotes(notes.filter((note) => note._id !== noteId))
+      setNotes(notes.filter((note) => note._id !== noteToDelete))
+      setNoteToDelete(null)
     } catch (error) {
       console.error('🚨 Error eliminando nota:', error)
     } finally {
@@ -134,19 +120,11 @@ export default function Notes({ routeId }: NotesProps) {
     setLoading(true)
 
     try {
-      const res = await fetch(
-        `${BACKEND_URL}/api/routes/${routeId}/notes/${noteId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.user?.email}`
-          },
-          body: JSON.stringify({ text: editedText, category: editedCategories })
-        }
-      )
-
-      if (!res.ok) throw new Error('Error editando la nota')
+      await apiFetch(`/routes/${routeId}/notes/${noteId}`, {
+        method: 'PUT',
+        token: session?.user?.email ?? undefined,
+        body: { text: editedText, category: editedCategories }
+      })
 
       setNotes(
         notes.map((note) =>
@@ -166,7 +144,7 @@ export default function Notes({ routeId }: NotesProps) {
   }
 
   return (
-    <div className='bg-gray-800 p-5 rounded-sm shadow-md border border-gray-700 w-full max-w-none lg:w-auto'>
+    <div className='bg-gray-800 p-5 rounded-sm shadow-md border border-gray-700 w-full max-w-none lg:w-auto min-h-[481px]'>
       <h3 className='text-lg font-semibold mb-3'>Notas sobre la ruta</h3>
       <div className='mb-3'>
         <textarea
@@ -184,12 +162,11 @@ export default function Notes({ routeId }: NotesProps) {
           {categories.map((cat) => (
             <button
               key={cat}
-              className={`px-3 py-1 text-sm font-medium rounded-sm transition-all
-                ${
-                  selectedCategories.includes(cat)
-                    ? 'bg-green-600 text-white shadow-md'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}
+              className={`px-3 py-1 text-sm font-medium rounded-sm transition-all ${
+                selectedCategories.includes(cat)
+                  ? 'bg-green-600 text-white shadow-md'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
               onClick={() => toggleCategory(cat)}
               aria-label={`Seleccionar categoría ${cat}`}
             >
@@ -227,12 +204,11 @@ export default function Notes({ routeId }: NotesProps) {
                   {categories.map((cat) => (
                     <button
                       key={cat}
-                      className={`px-3 py-1 text-sm font-medium rounded-sm transition-all
-                        ${
-                          editedCategories.includes(cat)
-                            ? 'bg-green-500 text-white shadow-md'
-                            : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                        }`}
+                      className={`px-3 py-1 text-sm font-medium rounded-sm transition-all ${
+                        editedCategories.includes(cat)
+                          ? 'bg-green-500 text-white shadow-md'
+                          : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                      }`}
                       onClick={() => toggleCategory(cat, true)}
                       aria-label={`Seleccionar categoría ${cat}`}
                     >
@@ -251,33 +227,27 @@ export default function Notes({ routeId }: NotesProps) {
               </div>
             ) : (
               <>
-                <div className='flex flex-col w-full'>
-                  <p className='text-sm'>• {note.text}</p>
-
-                  <div className='flex flex-wrap gap-2 mt-2'>
-                    {note.category.map((cat) => (
-                      <span
-                        key={cat}
-                        className='px-2 py-1 text-xs font-medium border border-gray-500 text-gray-300 bg-gray-800/50 rounded-sm'
-                      >
-                        {cat}
-                      </span>
-                    ))}
-                  </div>
+                <p className='text-sm'>• {note.text}</p>
+                <div className='flex flex-wrap gap-2 mt-2'>
+                  {note.category.map((cat) => (
+                    <span
+                      key={cat}
+                      className='px-2 py-1 text-xs font-medium border border-gray-500 text-gray-300 bg-gray-800/50 rounded-sm'
+                    >
+                      {cat}
+                    </span>
+                  ))}
                 </div>
-
                 <div className='flex space-x-2 mt-2 self-end'>
                   <button
-                    className='text-yellow-400 hover:text-yellow-300 transition-all duration-150 ease-in-out'
+                    className='text-yellow-400 hover:text-yellow-300'
                     onClick={() => handleEditNote(note)}
-                    title='Editar nota'
                   >
                     <PencilSquareIcon className='w-5 h-5' />
                   </button>
                   <button
-                    className='text-red-400 hover:text-red-300 transition-all duration-150 ease-in-out'
-                    onClick={() => handleDeleteNote(note._id)}
-                    title='Eliminar nota'
+                    className='text-red-400 hover:text-red-300'
+                    onClick={() => setNoteToDelete(note._id)}
                   >
                     <TrashIcon className='w-5 h-5' />
                   </button>
@@ -287,6 +257,14 @@ export default function Notes({ routeId }: NotesProps) {
           </li>
         ))}
       </ul>
+
+      {noteToDelete && (
+        <DeleteConfirmationModal
+          message='¿Seguro que quieres eliminar esta nota?'
+          onClose={() => setNoteToDelete(null)}
+          onConfirm={handleDeleteNote}
+        />
+      )}
     </div>
   )
 }

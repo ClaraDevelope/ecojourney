@@ -3,10 +3,9 @@ import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { MapPinIcon, ArrowRightIcon } from '@heroicons/react/24/solid'
-
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'
+import { ArrowRightIcon } from '@heroicons/react/24/solid'
+import { apiFetch } from '@/utils/api'
+import { MapPinIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
@@ -27,17 +26,10 @@ export default function MisMapas() {
       if (!session?.user?.email) return
 
       try {
-        const res = await fetch(`${BACKEND_URL}/api/routes/user`, {
+        const data = await apiFetch('/routes/user', {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.user.email}`
-          }
+          token: session?.user?.email ?? undefined // ✅ Corregido exactamente como pediste
         })
-
-        if (!res.ok) throw new Error('Error obteniendo rutas')
-
-        const data = await res.json()
         console.log(data)
         setRutas(data)
       } catch (error) {
@@ -73,9 +65,7 @@ export default function MisMapas() {
 
   return (
     <div className='p-6 min-h-screen'>
-      <h1 className='text-3xl font-bold mt-20 mb-6 text-center'>
-        Mis Rutas Guardadas
-      </h1>
+      <h1 className='text-3xl mt-20 mb-6 text-center'>Mis Rutas Guardadas</h1>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {rutas.map((ruta) => {
           const mapImageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${ruta.origin.lat},${ruta.origin.lng}&zoom=10&size=400x200&markers=color:red|${ruta.origin.lat},${ruta.origin.lng}&markers=color:blue|${ruta.destination.lat},${ruta.destination.lng}&key=${GOOGLE_MAPS_API_KEY}`
@@ -89,7 +79,7 @@ export default function MisMapas() {
               href={`/mis-rutas/${ruta._id}`}
               className='block'
             >
-              <div className='flex flex-col bg-gray-800 border border-gray-700 shadow-md  overflow-hidden transition-transform transform hover:scale-105 cursor-pointer h-[370px]'>
+              <div className='flex flex-col bg-gray-800 border border-gray-700 shadow-md  overflow-hidden transition-transform transform hover:scale-105 cursor-pointer '>
                 <div className='relative w-full h-48'>
                   <Image
                     src={mapImageUrl}
@@ -107,12 +97,9 @@ export default function MisMapas() {
                     <ArrowRightIcon className='w-6 h-6 text-gray-300' />
                     {ruta.destination.name}
                   </h2>
-                  <p className='text-gray-300 mt-2'>
-                    🚀 Transporte: {ruta.transportMode}
-                  </p>
-                  <p className='text-sm text-gray-400 mt-2'>
-                    📍 Lat: {ruta.origin.lat.toFixed(2)}, Lng:{' '}
-                    {ruta.origin.lng.toFixed(2)}
+                  <p className='text-gray-300 mt-2 flex items-center gap-2'>
+                    <GlobeAltIcon className='w-5 h-5 text-blue-400' />
+                    {ruta.transportMode}
                   </p>
                 </div>
               </div>

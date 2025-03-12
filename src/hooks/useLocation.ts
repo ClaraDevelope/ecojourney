@@ -1,4 +1,3 @@
-// useLocation.ts (Custom Hook para manejar ubicación y sugerencias)
 import { useState, useRef, useEffect } from 'react'
 import { fetchSuggestions, fetchGeocode } from '@/services/hereApiService'
 

@@ -4,11 +4,9 @@ import { useParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { MapPinIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 import { useSession } from 'next-auth/react'
+import { apiFetch } from '@/utils/api'
 import Notes from './notes'
 import PublishRoute from './publishButton'
-
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'
 
 const Map = dynamic(() => import('@/components/Map/Map'), { ssr: false })
 
@@ -17,6 +15,7 @@ interface Route {
   origin: { name: string; lat: number; lng: number }
   destination: { name: string; lat: number; lng: number }
   transportMode: string
+  public: boolean
 }
 
 export default function RouteDetailPage() {
@@ -30,15 +29,10 @@ export default function RouteDetailPage() {
 
     const fetchRuta = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/routes/${id}`, {
+        const data = await apiFetch(`/routes/${id}`, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.user?.email}`
-          }
+          token: session?.user?.email ?? undefined
         })
-        if (!res.ok) throw new Error('Error obteniendo la ruta')
-        const data = await res.json()
         setRuta(data)
       } catch (error) {
         console.error('🚨 Error obteniendo la ruta:', error)
@@ -70,14 +64,12 @@ export default function RouteDetailPage() {
 
   return (
     <div className='mt-[100px] p-6 min-h-screen w-full lg:container lg:mx-auto'>
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 w-full'>
-        {/* 📌 Columna izquierda - Info de la ruta */}
-        <div className='bg-gray-800 p-5 rounded-sm shadow-md border border-gray-700 w-full max-w-none lg:w-auto'>
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-start'>
+        {' '}
+        <div className='bg-gray-800 p-5 rounded-sm shadow-md border border-gray-700 w-full max-w-none lg:w-auto self-start'>
           <h2 className='text-lg font-semibold text-white mb-4'>
             Detalle de la Ruta
           </h2>
-
-          {/* 📍 Datos de la ruta */}
           <div className='flex items-center text-sm text-gray-300 mb-2'>
             <MapPinIcon className='w-5 h-5 text-red-500 mr-2' />
             <span>{ruta.origin.name}</span>
@@ -90,7 +82,6 @@ export default function RouteDetailPage() {
             <span>{ruta.transportMode}</span>
           </div>
 
-          {/* 🗺️ Mapa */}
           <div className='w-full h-64 rounded-sm overflow-hidden shadow-md'>
             <Map
               origin={ruta.origin}
@@ -99,14 +90,16 @@ export default function RouteDetailPage() {
             />
           </div>
 
-          {/* 🚀 Botón de publicación */}
           <div className='mt-4'>
-            <PublishRoute routeId={ruta._id} />
+            <PublishRoute
+              routeId={ruta._id}
+              initialPublicState={ruta.public ?? false}
+            />
           </div>
         </div>
-
-        {/* 📝 Columna derecha - Notas */}
-        <Notes routeId={ruta._id} />
+        <div>
+          <Notes routeId={ruta._id} />
+        </div>
       </div>
     </div>
   )
