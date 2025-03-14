@@ -3,7 +3,7 @@ const BACKEND_URL =
 
 interface FetchOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
-  body?: Record<string, unknown>
+  body?: Record<string, unknown> | FormData
   token?: string
 }
 
@@ -12,23 +12,31 @@ export const apiFetch = async (
   options: FetchOptions = {}
 ) => {
   const { method = 'GET', body, token } = options
+  const isFormData = body instanceof FormData
 
   try {
+    console.log(
+      `🛂 [apiFetch] Haciendo ${method} a ${BACKEND_URL}/api${endpoint}`
+    )
+    console.log(`📜 [apiFetch] Token recibido:`, token)
+
     const res = await fetch(`${BACKEND_URL}/api${endpoint}`, {
       method,
       headers: {
-        'Content-Type': 'application/json',
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       },
-      body: body ? JSON.stringify(body) : undefined
+      body: body ? (isFormData ? body : JSON.stringify(body)) : undefined
     })
 
+    const responseData = await res.json().catch(() => ({}))
+    console.log('📩 [apiFetch] Respuesta del backend:', responseData)
+
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}))
-      throw new Error(errorData.error || 'Error en la solicitud')
+      throw new Error(responseData.error || 'Error en la solicitud')
     }
 
-    return await res.json()
+    return responseData
   } catch (error) {
     console.error(`🚨 Error en API (${method} ${endpoint}):`, error)
     throw error

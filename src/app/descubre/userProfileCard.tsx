@@ -4,13 +4,19 @@ import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import { PencilIcon, PlusIcon } from '@heroicons/react/24/outline'
-import PostModal from './postModal'
+import PostModal from '../../components/PostModal/postModal'
 
-export default function UserProfileCard() {
+interface UserProfileCardProps {
+  setRefreshTrigger: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+export default function UserProfileCard({
+  setRefreshTrigger
+}: UserProfileCardProps) {
   const { data: session } = useSession()
   const [description, setDescription] = useState<string | null>(null)
   const [isEditingDescription, setIsEditingDescription] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false) // Estado del modal
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   if (!session) return null
 
@@ -69,7 +75,12 @@ export default function UserProfileCard() {
       </button>
 
       {/* Renderiza el modal si está abierto */}
-      {isModalOpen && <PostModal onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && (
+        <PostModal
+          onClose={() => setIsModalOpen(false)}
+          onPostPublished={() => setRefreshTrigger((prev: boolean) => !prev)}
+        />
+      )}
     </div>
   )
 }

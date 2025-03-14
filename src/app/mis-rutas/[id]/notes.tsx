@@ -144,7 +144,7 @@ export default function Notes({ routeId }: NotesProps) {
   }
 
   return (
-    <div className='bg-gray-800 p-5 rounded-sm shadow-md border border-gray-700 w-full max-w-none lg:w-auto min-h-[481px]'>
+    <div className='bg-gray-800 p-5 rounded-sm shadow-md border border-gray-700 w-full max-w-none lg:w-auto min-h-[525px]'>
       <h3 className='text-lg font-semibold mb-3'>Notas sobre la ruta</h3>
       <div className='mb-3'>
         <textarea
@@ -186,77 +186,86 @@ export default function Notes({ routeId }: NotesProps) {
         </button>
       </div>
 
-      <ul className='space-y-3'>
-        {notes.map((note) => (
-          <li
-            key={note._id}
-            className='p-3 bg-gray-700 rounded-sm flex flex-col justify-between items-start border border-gray-600 shadow-sm'
-          >
-            {editingNoteId === note._id ? (
-              <div className='w-full'>
-                <textarea
-                  className='w-full p-2 rounded-sm bg-gray-600 text-white focus:ring-2 focus:ring-green-500 outline-none resize-none'
-                  rows={2}
-                  value={editedText}
-                  onChange={(e) => setEditedText(e.target.value)}
-                />
-                <div className='flex flex-wrap gap-2 mt-2'>
-                  {categories.map((cat) => (
+      {notes.length === 0 ? (
+        <p className='text-center text-gray-400 mt-20 text-sm'>
+          Aún no tienes notas para esta ruta.
+          <span className='block'>
+            ¡Añade la primera y guarda información útil!
+          </span>
+        </p>
+      ) : (
+        <ul className='space-y-3'>
+          {notes.map((note) => (
+            <li
+              key={note._id}
+              className='p-3 bg-gray-700 rounded-sm flex flex-col justify-between items-start border border-gray-600 shadow-sm'
+            >
+              {editingNoteId === note._id ? (
+                <div className='w-full'>
+                  <textarea
+                    className='w-full p-2 rounded-sm bg-gray-600 text-white focus:ring-2 focus:ring-green-500 outline-none resize-none'
+                    rows={2}
+                    value={editedText}
+                    onChange={(e) => setEditedText(e.target.value)}
+                  />
+                  <div className='flex flex-wrap gap-2 mt-2'>
+                    {categories.map((cat) => (
+                      <button
+                        key={cat}
+                        className={`px-3 py-1 text-sm font-medium rounded-sm transition-all ${
+                          editedCategories.includes(cat)
+                            ? 'bg-green-500 text-white shadow-md'
+                            : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                        }`}
+                        onClick={() => toggleCategory(cat, true)}
+                        aria-label={`Seleccionar categoría ${cat}`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    className='mt-2 w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded-sm transition-all duration-200 ease-in-out font-medium'
+                    onClick={() => handleSaveEdit(note._id)}
+                    title='Guardar cambios en la nota'
+                  >
+                    <CheckIcon className='w-5 h-5' />
+                    Guardar Cambios
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <p className='text-sm'>• {note.text}</p>
+                  <div className='flex flex-wrap gap-2 mt-2'>
+                    {note.category.map((cat) => (
+                      <span
+                        key={cat}
+                        className='px-2 py-1 text-xs font-medium border border-gray-500 text-gray-300 bg-gray-800/50 rounded-sm'
+                      >
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
+                  <div className='flex space-x-2 mt-2 self-end'>
                     <button
-                      key={cat}
-                      className={`px-3 py-1 text-sm font-medium rounded-sm transition-all ${
-                        editedCategories.includes(cat)
-                          ? 'bg-green-500 text-white shadow-md'
-                          : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                      }`}
-                      onClick={() => toggleCategory(cat, true)}
-                      aria-label={`Seleccionar categoría ${cat}`}
+                      className='text-yellow-400 hover:text-yellow-300'
+                      onClick={() => handleEditNote(note)}
                     >
-                      {cat}
+                      <PencilSquareIcon className='w-5 h-5' />
                     </button>
-                  ))}
-                </div>
-                <button
-                  className='mt-2 w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded-sm transition-all duration-200 ease-in-out font-medium'
-                  onClick={() => handleSaveEdit(note._id)}
-                  title='Guardar cambios en la nota'
-                >
-                  <CheckIcon className='w-5 h-5' />
-                  Guardar Cambios
-                </button>
-              </div>
-            ) : (
-              <>
-                <p className='text-sm'>• {note.text}</p>
-                <div className='flex flex-wrap gap-2 mt-2'>
-                  {note.category.map((cat) => (
-                    <span
-                      key={cat}
-                      className='px-2 py-1 text-xs font-medium border border-gray-500 text-gray-300 bg-gray-800/50 rounded-sm'
+                    <button
+                      className='text-red-400 hover:text-red-300'
+                      onClick={() => setNoteToDelete(note._id)}
                     >
-                      {cat}
-                    </span>
-                  ))}
-                </div>
-                <div className='flex space-x-2 mt-2 self-end'>
-                  <button
-                    className='text-yellow-400 hover:text-yellow-300'
-                    onClick={() => handleEditNote(note)}
-                  >
-                    <PencilSquareIcon className='w-5 h-5' />
-                  </button>
-                  <button
-                    className='text-red-400 hover:text-red-300'
-                    onClick={() => setNoteToDelete(note._id)}
-                  >
-                    <TrashIcon className='w-5 h-5' />
-                  </button>
-                </div>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
+                      <TrashIcon className='w-5 h-5' />
+                    </button>
+                  </div>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
 
       {noteToDelete && (
         <DeleteConfirmationModal

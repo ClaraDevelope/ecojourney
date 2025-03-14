@@ -28,7 +28,7 @@ export default function MisMapas() {
       try {
         const data = await apiFetch('/routes/user', {
           method: 'GET',
-          token: session?.user?.email ?? undefined // ✅ Corregido exactamente como pediste
+          token: session?.user?.email ?? undefined
         })
         console.log(data)
         setRutas(data)

@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react'
 import { apiFetch } from '@/utils/api'
 import Notes from './notes'
 import PublishRoute from './publishButton'
+import DeleteRouteButton from './deleteRouteButton'
 
 const Map = dynamic(() => import('@/components/Map/Map'), { ssr: false })
 
@@ -23,6 +24,9 @@ export default function RouteDetailPage() {
   const { data: session } = useSession()
   const [ruta, setRuta] = useState<Route | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // ✅ Estado para refrescar el feed después de publicar una ruta
+  const [refreshTrigger, setRefreshTrigger] = useState<boolean>(false)
 
   useEffect(() => {
     if (!id || !session?.user?.email) return
@@ -41,7 +45,7 @@ export default function RouteDetailPage() {
       }
     }
     fetchRuta()
-  }, [id, session])
+  }, [id, session, refreshTrigger])
 
   if (loading) {
     return (
@@ -65,7 +69,6 @@ export default function RouteDetailPage() {
   return (
     <div className='mt-[100px] p-6 min-h-screen w-full lg:container lg:mx-auto'>
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-start'>
-        {' '}
         <div className='bg-gray-800 p-5 rounded-sm shadow-md border border-gray-700 w-full max-w-none lg:w-auto self-start'>
           <h2 className='text-lg font-semibold text-white mb-4'>
             Detalle de la Ruta
@@ -94,7 +97,11 @@ export default function RouteDetailPage() {
             <PublishRoute
               routeId={ruta._id}
               initialPublicState={ruta.public ?? false}
+              setRefreshTrigger={setRefreshTrigger}
             />
+          </div>
+          <div>
+            <DeleteRouteButton routeId={ruta._id} />
           </div>
         </div>
         <div>
