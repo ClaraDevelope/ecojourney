@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Feed from './feedPublications'
+import Feed from './feed'
 import UserProfileCard from './userProfileCard'
 
 export default function Page() {

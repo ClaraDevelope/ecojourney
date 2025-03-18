@@ -25,7 +25,6 @@ export default function RouteDetailPage() {
   const [ruta, setRuta] = useState<Route | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // ✅ Estado para refrescar el feed después de publicar una ruta
   const [refreshTrigger, setRefreshTrigger] = useState<boolean>(false)
 
   useEffect(() => {
@@ -95,7 +94,7 @@ export default function RouteDetailPage() {
 
           <div className='mt-4'>
             <PublishRoute
-              routeId={ruta._id}
+              routeData={ruta} // ✅ Pasamos el objeto completo
               initialPublicState={ruta.public ?? false}
               setRefreshTrigger={setRefreshTrigger}
             />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import {
   PhotoIcon,
@@ -11,15 +11,18 @@ import {
 import Image from 'next/image'
 import RouteSelector from './routeSelector'
 import { apiFetch } from '@/utils/api'
+import SuccessModal from '../SuccessModal/SuccessModal'
 
 interface PostModalProps {
   onClose: () => void
   onPostPublished: () => void
+  initialRoute?: { id: string; name: string; isPublic?: boolean }
 }
 
 export default function PostModal({
   onClose,
-  onPostPublished
+  onPostPublished,
+  initialRoute
 }: PostModalProps) {
   const { data: session } = useSession()
   const [postContent, setPostContent] = useState('')
@@ -31,23 +34,46 @@ export default function PostModal({
   const [selectedImages, setSelectedImages] = useState<File[]>([])
   const [showRouteSelector, setShowRouteSelector] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+
+  useEffect(() => {
+    if (initialRoute) {
+      console.log('🟢 Se ha recibido initialRoute:', initialRoute)
+      setSelectedRoute(initialRoute)
+    }
+  }, [initialRoute])
 
   const handlePublishPost = async () => {
     if (!postContent.trim() || !selectedRoute) return
 
     setLoading(true)
-
     try {
+      // ✅ Solo cambia la visibilidad si la ruta NO ES pública
       if (!selectedRoute.isPublic) {
-        await apiFetch(`/routes/${selectedRoute.id}/toggle-visibility`, {
-          method: 'PUT',
-          token: session?.user?.email ?? undefined
-        })
+        console.log('🔄 Cambiando visibilidad de la ruta antes de publicar...')
+
+        const visibilityResponse = await apiFetch(
+          `/routes/${selectedRoute.id}/toggle-visibility`,
+          {
+            method: 'PUT',
+            token: session?.user?.email ?? undefined
+          }
+        )
+
+        if (!visibilityResponse.public) {
+          throw new Error(
+            'No se pudo hacer pública la ruta. Inténtalo de nuevo.'
+          )
+        }
+
+        console.log('✅ Ruta marcada como pública en backend.')
+
+        // ✅ Actualizamos el estado localmente
         setSelectedRoute((prev) => (prev ? { ...prev, isPublic: true } : prev))
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
+      // 🟢 Hacemos el POST solo si la ruta ya es pública
+      console.log('✅ Ruta ahora es pública. Procediendo con la publicación...')
       const formData = new FormData()
       formData.append('text', postContent)
       formData.append('routeId', selectedRoute.id)
@@ -59,11 +85,19 @@ export default function PostModal({
         body: formData
       })
 
-      onPostPublished() // ✅ ACTUALIZAMOS EL FEED DESPUÉS DE PUBLICAR
+      // ✅ Aquí mostramos el modal de éxito
+      setShowSuccessModal(true)
+
+      // Reseteamos los estados
       setPostContent('')
       setSelectedRoute(null)
       setSelectedImages([])
-      onClose()
+
+      // ⏳ Cierra el modal de publicación **después de que el modal de éxito se haya mostrado**
+      setTimeout(() => {
+        onPostPublished()
+        onClose()
+      }, 3000) // Tiempo suficiente para ver el modal de éxito antes de cerrar todo
     } catch (error) {
       console.error('🚨 Error al publicar:', error)
     } finally {
@@ -79,8 +113,9 @@ export default function PostModal({
   const removeImage = (index: number) => {
     setSelectedImages(selectedImages.filter((_, i) => i !== index))
   }
+
   return (
-    <div className='fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-[99999999999999]'>
+    <div className='fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-[99999999999999999999999999]'>
       <div className='bg-gray-800 text-white p-6 rounded-md shadow-lg w-full max-w-lg border border-gray-600 relative'>
         <button
           onClick={onClose}
@@ -108,11 +143,12 @@ export default function PostModal({
           <div className='relative'>
             <input
               type='text'
-              value={selectedRoute ? selectedRoute.name : ''}
+              value={selectedRoute?.name || ''}
               readOnly
               className='w-full bg-gray-700 text-white p-2 rounded-sm border border-gray-500 cursor-not-allowed'
               placeholder='No hay ruta seleccionada'
             />
+
             <button
               className='absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-2 bg-green-500 hover:bg-green-400 text-black py-1 px-3 rounded-sm transition-all text-sm'
               onClick={() => setShowRouteSelector(true)}
@@ -170,11 +206,7 @@ export default function PostModal({
 
         <button
           onClick={handlePublishPost}
-          className={`mt-4 w-full py-2 px-4 rounded-sm transition-all font-semibold ${
-            selectedRoute
-              ? 'bg-green-500 hover:bg-green-400 text-black'
-              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-          }`}
+          className='mt-4 w-full py-2 px-4 rounded-sm transition-all bg-green-500 hover:bg-green-400 text-black font-semibold'
           disabled={!selectedRoute || loading}
         >
           {loading ? 'Publicando...' : 'Compartir'}
@@ -188,6 +220,12 @@ export default function PostModal({
             setShowRouteSelector(false)
           }}
           onClose={() => setShowRouteSelector(false)}
+        />
+      )}
+      {showSuccessModal && (
+        <SuccessModal
+          message='¡Publicación realizada con éxito!'
+          onClose={() => setShowSuccessModal(false)}
         />
       )}
     </div>
