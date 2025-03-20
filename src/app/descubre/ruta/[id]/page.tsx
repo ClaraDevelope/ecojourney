@@ -5,10 +5,7 @@ import dynamic from 'next/dynamic'
 import { MapPinIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 import { useSession } from 'next-auth/react'
 import { apiFetch } from '@/utils/api'
-import Notes from './notes'
-import PublishRoute from './publishButton'
-import DeleteRouteButton from './deleteRouteButton'
-import SavedRouteDetail from './savedRouteDetail'
+import SaveButton from './saveButton'
 
 const Map = dynamic(() => import('@/components/Map/Map'), { ssr: false })
 
@@ -18,15 +15,22 @@ interface Route {
   destination: { name: string; lat: number; lng: number }
   transportMode: string
   public: boolean
-  user: { _id: string; name?: string; email?: string } // Asegura que `email` esté definido
+  savedBy: string[]
+}
+
+interface Note {
+  _id: string
+  text: string
+  category: string
+  createdAt: string
 }
 
 export default function RouteDetailPage() {
   const { id } = useParams()
   const { data: session } = useSession()
   const [ruta, setRuta] = useState<Route | null>(null)
+  const [notes, setNotes] = useState<Note[]>([])
   const [loading, setLoading] = useState(true)
-  const [refreshTrigger, setRefreshTrigger] = useState<boolean>(false)
 
   useEffect(() => {
     if (!id || !session?.user?.email) return
@@ -45,9 +49,21 @@ export default function RouteDetailPage() {
       }
     }
     fetchRuta()
-  }, [id, session, refreshTrigger])
-  console.log('📌 session.user:', session?.user)
-  console.log('📌 ruta.user:', ruta?.user)
+  }, [id, session])
+
+  useEffect(() => {
+    if (!id) return
+
+    const fetchNotes = async () => {
+      try {
+        const data = await apiFetch(`/routes/${id}/notes`)
+        setNotes(data.notes)
+      } catch (error) {
+        console.error('🚨 Error obteniendo notas:', error)
+      }
+    }
+    fetchNotes()
+  }, [id])
 
   if (loading) {
     return (
@@ -68,10 +84,7 @@ export default function RouteDetailPage() {
     )
   }
 
-  // 🔍 Comprobamos si el usuario es el creador de la ruta
-  const isOwner = session?.user?.email === ruta.user.email
-
-  return isOwner ? (
+  return (
     <div className='mt-[100px] p-6 min-h-screen w-full lg:container lg:mx-auto'>
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-start'>
         <div className='bg-gray-800 p-5 rounded-sm shadow-md border border-gray-700 w-full max-w-none lg:w-auto self-start'>
@@ -99,22 +112,44 @@ export default function RouteDetailPage() {
           </div>
 
           <div className='mt-4'>
-            <PublishRoute
-              routeData={ruta} // ✅ Pasamos el objeto completo
-              initialPublicState={ruta.public ?? false}
-              setRefreshTrigger={setRefreshTrigger}
+            <SaveButton
+              routeId={ruta._id}
+              userHasSaved={ruta.savedBy.includes(session?.user?.email || '')}
+              initialSavedCount={ruta.savedBy.length}
             />
           </div>
-          <div>
-            <DeleteRouteButton routeId={ruta._id} />
-          </div>
         </div>
-        <div>
-          <Notes routeId={ruta._id} />
+
+        <div className='bg-gray-800 p-5 rounded-sm shadow-md border border-gray-700 w-full'>
+          <h2 className='text-lg font-semibold text-white mb-4'>
+            Notas sobre la ruta
+          </h2>
+          {notes.length > 0 ? (
+            <div className='space-y-4'>
+              {notes.map((note) => (
+                <div
+                  key={note._id}
+                  className='p-4 bg-gray-700 rounded-md shadow-md'
+                >
+                  <div className='flex justify-between items-center mb-2'>
+                    <span className='text-sm text-gray-400'>
+                      {new Date(note.createdAt).toLocaleDateString()}
+                    </span>
+                    <span className='text-sm bg-blue-500 px-2 py-1 rounded text-white'>
+                      {note.category}
+                    </span>
+                  </div>
+                  <p className='text-gray-200'>{note.text}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className='text-gray-400 text-sm'>
+              Aún no hay notas para esta ruta.
+            </p>
+          )}
         </div>
       </div>
     </div>
-  ) : (
-    <SavedRouteDetail ruta={ruta} />
   )
 }

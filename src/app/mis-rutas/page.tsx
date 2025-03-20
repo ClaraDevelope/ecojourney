@@ -31,7 +31,7 @@ export default function MisMapas() {
           token: session?.user?.email ?? undefined
         })
         console.log(data)
-        setRutas(data)
+        setRutas([...data.myRoutes, ...data.savedRoutes])
       } catch (error) {
         console.error('Error obteniendo rutas:', error)
       } finally {
@@ -65,7 +65,7 @@ export default function MisMapas() {
 
   return (
     <div className='p-6 min-h-screen'>
-      <h1 className='text-3xl mt-20 mb-6 text-center'>Mis Rutas Guardadas</h1>
+      <h1 className='text-3xl mt-20 mb-6 text-center'>Mis Rutas</h1>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {rutas.map((ruta) => {
           const mapImageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${ruta.origin.lat},${ruta.origin.lng}&zoom=10&size=400x200&markers=color:red|${ruta.origin.lat},${ruta.origin.lng}&markers=color:blue|${ruta.destination.lat},${ruta.destination.lng}&key=${GOOGLE_MAPS_API_KEY}`

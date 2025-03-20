@@ -68,7 +68,7 @@ export default function Map({ origin, destination, transportMode }: MapProps) {
           return
         }
 
-        let mode = ''
+        let mode = 'foot-walking'
         switch (transportMode) {
           case 'Coche Diesel':
           case 'Coche Gasolina':
@@ -87,7 +87,7 @@ export default function Map({ origin, destination, transportMode }: MapProps) {
             mode = 'public-transport'
             break
           default:
-            return
+            mode = 'walking'
         }
 
         try {

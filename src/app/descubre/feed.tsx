@@ -18,11 +18,11 @@ interface Publication {
     origin: { name: string }
     destination: { name: string }
     transportMode: string
+    _id: string
   }
   createdAt: string
-  likes: string[] // ✅ Agregado
+  likes: string[]
   reviews: {
-    // ✅ Agregado
     _id: string
     rating: number
     comment: string
