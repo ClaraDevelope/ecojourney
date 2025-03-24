@@ -91,15 +91,32 @@ export default function RouteDetailPage() {
           <h2 className='text-lg font-semibold text-white mb-4'>
             Detalle de la Ruta
           </h2>
-          <div className='flex items-center text-sm text-gray-300 mb-2'>
-            <MapPinIcon className='w-5 h-5 text-red-500 mr-2' />
+
+          <div
+            className='flex items-center text-sm text-gray-300 mb-2'
+            aria-label={`Origen: ${ruta.origin.name}, destino: ${ruta.destination.name}`}
+          >
+            <MapPinIcon
+              className='w-5 h-5 text-red-500 mr-2'
+              aria-hidden='true'
+              title='Ruta'
+            />
             <span>{ruta.origin.name}</span>
-            <span className='mx-2 text-gray-400'>→</span>
+            <span className='mx-2 text-gray-400' aria-hidden='true'>
+              →
+            </span>
             <span>{ruta.destination.name}</span>
           </div>
 
-          <div className='flex items-center text-sm text-gray-300 mb-4'>
-            <GlobeAltIcon className='w-5 h-5 text-blue-400 mr-2' />
+          <div
+            className='flex items-center text-sm text-gray-300 mb-4'
+            aria-label={`Modo de transporte: ${ruta.transportMode}`}
+          >
+            <GlobeAltIcon
+              className='w-5 h-5 text-blue-400 mr-2'
+              aria-hidden='true'
+              title='Transporte'
+            />
             <span>{ruta.transportMode}</span>
           </div>
 
@@ -130,6 +147,9 @@ export default function RouteDetailPage() {
                 <div
                   key={note._id}
                   className='p-4 bg-gray-700 rounded-md shadow-md'
+                  aria-label={`Nota sobre la ruta, categoría: ${
+                    note.category
+                  }, fecha: ${new Date(note.createdAt).toLocaleDateString()}`}
                 >
                   <div className='flex justify-between items-center mb-2'>
                     <span className='text-sm text-gray-400'>

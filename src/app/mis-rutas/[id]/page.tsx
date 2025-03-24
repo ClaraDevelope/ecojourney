@@ -74,7 +74,7 @@ export default function RouteDetailPage() {
   return isOwner ? (
     <div className='mt-[100px] p-6 min-h-screen w-full lg:container lg:mx-auto'>
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-start'>
-        <div className='bg-gray-800 p-5 rounded-sm shadow-md border border-gray-700 w-full max-w-none lg:w-auto self-start'>
+        <div className='bg-gray-800 p-5 rounded-sm shadow-md border border-gray-700 w-full max-w-none lg:w-auto self-start '>
           <h2 className='text-lg font-semibold text-white mb-4'>
             Detalle de la Ruta
           </h2>

@@ -13,7 +13,7 @@ export const apiFetch = async (
 ) => {
   const { method = 'GET', body, token } = options
   const isFormData = body instanceof FormData
-
+  console.log(options)
   try {
     console.log(
       `🛂 [apiFetch] Haciendo ${method} a ${BACKEND_URL}/api${endpoint}`

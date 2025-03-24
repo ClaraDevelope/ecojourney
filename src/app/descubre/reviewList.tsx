@@ -55,14 +55,6 @@ export default function ReviewList({
           const isOwnReview =
             rev.user?.email?.trim().toLowerCase() ===
             userEmail.trim().toLowerCase()
-          console.log(
-            '💡 Revisando usuario de la reseña:',
-            rev.user?.email,
-            ' vs ',
-            userEmail,
-            '=>',
-            isOwnReview
-          )
 
           return (
             <div
@@ -72,13 +64,16 @@ export default function ReviewList({
               {rev.user?.avatar ? (
                 <Image
                   src={rev.user.avatar}
-                  alt={rev.user.name || 'Usuario'}
+                  alt={`Avatar de ${rev.user.name || 'usuario'}`}
                   width={40}
                   height={40}
                   className='rounded-full object-cover'
                 />
               ) : (
-                <UserIcon className='w-10 h-10 text-gray-500' />
+                <UserIcon
+                  className='w-10 h-10 text-gray-500'
+                  aria-hidden='true'
+                />
               )}
 
               <div className='flex-1'>
@@ -89,13 +84,17 @@ export default function ReviewList({
                   {new Date(rev.createdAt).toLocaleDateString()}
                 </p>
 
-                <div className='flex gap-1 my-1'>
+                <div
+                  className='flex gap-1 my-1'
+                  aria-label={`Valoración: ${rev.rating} estrellas`}
+                >
                   {[...Array(5)].map((_, i) => (
                     <StarIcon
                       key={i}
                       className={`w-4 h-4 ${
                         i < rev.rating ? 'text-yellow-400' : 'text-gray-500'
                       }`}
+                      aria-hidden='true'
                     />
                   ))}
                 </div>
@@ -108,8 +107,9 @@ export default function ReviewList({
                   onClick={() => handleDeleteReview(rev._id)}
                   className='text-red-400 hover:text-red-300 transition'
                   title='Eliminar reseña'
+                  aria-label='Eliminar tu reseña'
                 >
-                  <TrashIcon className='w-5 h-5' />
+                  <TrashIcon className='w-5 h-5' aria-hidden='true' />
                 </button>
               )}
             </div>

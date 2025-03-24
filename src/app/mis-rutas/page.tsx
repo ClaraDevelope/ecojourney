@@ -44,7 +44,7 @@ export default function MisMapas() {
 
   if (loading) {
     return (
-      <div className='flex justify-center items-center min-h-screen bg-gray-900'>
+      <div className='flex justify-center items-center min-h-screen bg-gray-900 '>
         <div className='flex flex-col items-center space-y-4'>
           <div className='animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500'></div>
           <p className='text-white text-lg animate-pulse'>Cargando rutas...</p>
@@ -78,12 +78,17 @@ export default function MisMapas() {
               key={ruta._id}
               href={`/mis-rutas/${ruta._id}`}
               className='block'
+              aria-label={`Ver detalles de la ruta de ${ruta.origin.name} a ${ruta.destination.name}`}
+              title={`Ruta: ${ruta.origin.name} → ${ruta.destination.name}`}
             >
-              <div className='flex flex-col bg-gray-800 border border-gray-700 shadow-md  overflow-hidden transition-transform transform hover:scale-105 cursor-pointer '>
+              <div
+                className='flex flex-col bg-gray-800 border border-gray-700 shadow-md overflow-hidden transition-transform transform hover:scale-105 cursor-pointer'
+                aria-label={`Tarjeta de ruta de ${ruta.origin.name} a ${ruta.destination.name}`}
+              >
                 <div className='relative w-full h-48'>
                   <Image
                     src={mapImageUrl}
-                    alt={`Mapa de la ruta ${ruta.origin.name} a ${ruta.destination.name}`}
+                    alt={`Mapa de la ruta de ${ruta.origin.name} a ${ruta.destination.name}`}
                     width={400}
                     height={200}
                     className='object-cover w-full h-full'
@@ -92,13 +97,22 @@ export default function MisMapas() {
                 </div>
                 <div className='p-5 bg-gray-900 text-white flex-grow min-h-[150px]'>
                   <h2 className='text-lg font-semibold flex items-center gap-2'>
-                    <MapPinIcon className='w-5 h-5 text-red-500' />
+                    <MapPinIcon
+                      className='w-5 h-5 text-red-500'
+                      aria-hidden='true'
+                    />
                     {ruta.origin.name}
-                    <ArrowRightIcon className='w-6 h-6 text-gray-300' />
+                    <ArrowRightIcon
+                      className='w-6 h-6 text-gray-300'
+                      aria-hidden='true'
+                    />
                     {ruta.destination.name}
                   </h2>
                   <p className='text-gray-300 mt-2 flex items-center gap-2'>
-                    <GlobeAltIcon className='w-5 h-5 text-blue-400' />
+                    <GlobeAltIcon
+                      className='w-5 h-5 text-blue-400'
+                      aria-hidden='true'
+                    />
                     {ruta.transportMode}
                   </p>
                 </div>

@@ -28,7 +28,7 @@ export default function RouteSelector({
         const data = await apiFetch('/routes/user', {
           token: session.user.email
         })
-        setRoutes(data)
+        setRoutes(data.myRoutes) // 🔹 Solo guardamos las rutas creadas por el usuario
       } catch (error) {
         console.error('🚨 Error obteniendo rutas:', error)
         setError('No se pudieron cargar las rutas.')

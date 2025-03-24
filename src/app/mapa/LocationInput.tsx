@@ -88,25 +88,37 @@ export default function LocationInput({
     >
       <div className='w-full flex flex-row flex-wrap justify-around gap-2 max-w-4xl mx-auto bg-gray-800'>
         <div className='relative px-2'>
-          <label className='block text-md text-[var(--terciary)] mb-1'>
+          <label
+            htmlFor={`input-${label.toLowerCase()}`}
+            className='block text-md text-[var(--terciary)] mb-1'
+          >
             {label}
           </label>
           <input
+            id={`input-${label.toLowerCase()}`}
             type='text'
             placeholder={`Introduce tu ${label.toLowerCase()}`}
             className='w-full p-3 mt-2 text-[var(--background)] focus:outline-none focus:ring-2 transition'
             value={value}
             onChange={(e) => handleInputChange(e.target.value)}
-            onBlur={handleBlurOrEnter} // Buscar coordenadas al perder el foco
-            onKeyDown={(e) => e.key === 'Enter' && handleBlurOrEnter()} // Buscar coordenadas al presionar Enter
+            onBlur={handleBlurOrEnter}
+            onKeyDown={(e) => e.key === 'Enter' && handleBlurOrEnter()}
+            aria-label={`Campo para introducir ${label.toLowerCase()}`}
+            title={`Introduce tu ${label.toLowerCase()}`}
           />
           {suggestions.length > 0 && (
-            <div className='absolute bg-white text-black w-full mt-2 rounded-md z-[999] shadow-lg'>
+            <div
+              className='absolute bg-white text-black w-full mt-2 rounded-md z-[999] shadow-lg'
+              role='listbox'
+              aria-label='Sugerencias de ubicación'
+            >
               {suggestions.map((suggestion) => (
                 <div
                   key={suggestion.id}
                   className='p-2 cursor-pointer hover:bg-gray-200'
                   onClick={() => handleSuggestionClick(suggestion)}
+                  role='option'
+                  aria-selected='false'
                 >
                   {suggestion.title}
                 </div>

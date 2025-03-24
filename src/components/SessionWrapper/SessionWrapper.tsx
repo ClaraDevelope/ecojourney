@@ -1,4 +1,4 @@
-'use client' // Necesario para usar el contexto de NextAuth
+'use client'
 
 import { SessionProvider } from 'next-auth/react'
 

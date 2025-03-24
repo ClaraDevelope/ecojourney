@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { apiFetch } from '@/utils/api'
-import { useSession } from 'next-auth/react'
+import { useSession, signIn } from 'next-auth/react'
 import { XMarkIcon, StarIcon } from '@heroicons/react/24/solid'
 import SuccessModal from '@/components/SuccessModal/SuccessModal'
 
@@ -31,6 +31,11 @@ export default function ReviewModal({
   const { data: session } = useSession()
 
   const handleSubmitReview = async () => {
+    if (!session) {
+      await signIn('google') // 🔄 Redirigir al usuario al login si no está autenticado
+      return
+    }
+
     if (!rating || rating < 1 || rating > 5 || !comment.trim()) return
 
     setLoading(true)
@@ -51,9 +56,6 @@ export default function ReviewModal({
       onReviewAdded(newReview)
       setRating(0)
       setComment('')
-
-      onReviewAdded(newReview) // 👈 Enviamos la reseña correcta al componente padre
-
       setShowSuccessModal(true)
 
       setTimeout(() => {
@@ -76,16 +78,25 @@ export default function ReviewModal({
         />
       )}
 
-      <div className='fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-50'>
+      <div
+        className='fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-50'
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby='modal-title'
+      >
         <div className='bg-gray-800 text-white p-6 rounded-md shadow-lg w-full max-w-lg border border-gray-600 relative'>
           <button
             onClick={onClose}
             className='absolute top-3 right-3 text-gray-400 hover:text-white transition-all'
+            title='Cerrar modal'
+            aria-label='Cerrar modal de añadir reseña'
           >
-            <XMarkIcon className='w-6 h-6' />
+            <XMarkIcon className='w-6 h-6' aria-hidden='true' />
           </button>
 
-          <h3 className='text-lg font-semibold mb-4'>Añadir una Reseña</h3>
+          <h3 id='modal-title' className='text-lg font-semibold mb-4'>
+            Añadir una Reseña
+          </h3>
 
           {/* Nueva Reseña */}
           <div className='mt-3'>
@@ -98,8 +109,10 @@ export default function ReviewModal({
                   className={`w-6 h-6 focus:outline-none transition ${
                     i < rating ? 'text-blue-400' : 'text-gray-500'
                   }`}
+                  title={`Seleccionar ${i + 1} estrella`}
+                  aria-label={`Seleccionar ${i + 1} estrella`}
                 >
-                  <StarIcon className='w-6 h-6' />
+                  <StarIcon className='w-6 h-6' aria-hidden='true' />
                 </button>
               ))}
             </div>
@@ -110,11 +123,15 @@ export default function ReviewModal({
               className='w-full bg-gray-700 text-white p-2 mt-3 rounded-md border border-gray-500'
               placeholder='Escribe tu comentario...'
               rows={2}
+              aria-label='Campo de texto para escribir tu comentario'
             />
+
             <button
               onClick={handleSubmitReview}
               className='mt-3 w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-md transition'
               disabled={loading}
+              title='Publicar reseña'
+              aria-label='Publicar reseña'
             >
               {loading ? 'Enviando...' : 'Publicar reseña'}
             </button>

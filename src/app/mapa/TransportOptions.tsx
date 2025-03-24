@@ -130,10 +130,16 @@ const TransportOptions: React.FC<{
 
   return (
     <div className='flex flex-col items-center m-auto'>
-      <label className='text-[var(--terciary)]'>
+      <label htmlFor='transport-select' className='text-[var(--terciary)]'>
         Selecciona modo de transporte:
       </label>
-      <select onChange={handleChange} className='mt-2 p-2 text-black'>
+      <select
+        id='transport-select'
+        onChange={handleChange}
+        className='mt-2 p-2 text-black'
+        aria-label='Selecciona el modo de transporte'
+        title='Modo de transporte'
+      >
         {transportOptions.map((option) => (
           <option key={option.mode} value={option.mode}>
             {option.mode}

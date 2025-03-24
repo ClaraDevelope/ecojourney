@@ -47,11 +47,19 @@ export default function SaveButton({
   }
 
   return (
-    <button onClick={toggleSave} className='flex items-center gap-2 text-white'>
+    <button
+      onClick={toggleSave}
+      className='flex items-center gap-2 text-white'
+      title={isSaved ? 'Eliminar de guardados' : 'Guardar ruta'}
+      aria-label={isSaved ? 'Eliminar de guardados' : 'Guardar ruta'}
+    >
       {isSaved ? (
-        <BookmarkSlashIcon className='w-5 h-5 text-blue-400' />
+        <BookmarkSlashIcon
+          className='w-5 h-5 text-blue-400'
+          aria-hidden='true'
+        />
       ) : (
-        <BookmarkIcon className='w-5 h-5 text-gray-400' />
+        <BookmarkIcon className='w-5 h-5 text-gray-400' aria-hidden='true' />
       )}
       {savedCount}
     </button>

@@ -89,11 +89,19 @@ export default function SaveRouteButton({
             ? 'border-2 border-gray-600'
             : 'border-2 border-gray-600 hover:bg-green-800 hover:border-transparent'
         } active:scale-95`}
+        aria-label={isSaved ? 'Eliminar ruta de guardados' : 'Guardar ruta'}
+        title={isSaved ? 'Eliminar ruta de guardados' : 'Guardar ruta'}
       >
         {isSaved ? (
-          <BookmarkSlashIcon className='w-5 h-5 text-white transition' />
+          <BookmarkSlashIcon
+            className='w-5 h-5 text-white transition'
+            aria-hidden='true'
+          />
         ) : (
-          <BookmarkIcon className='w-5 h-5 text-white transition' />
+          <BookmarkIcon
+            className='w-5 h-5 text-white transition'
+            aria-hidden='true'
+          />
         )}
         {isSaved ? 'Guardado' : 'Guardar ruta'}
       </button>
